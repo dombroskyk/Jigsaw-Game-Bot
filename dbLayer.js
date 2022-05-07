@@ -6,6 +6,7 @@ const TAGS_KEY = "tags";
 const GAMES_KEY = "games";
 
 function initializeDatabase() {
+  console.log("Initializing Database");
   db.list().then(keys => {
     if (!keys.includes(GAMES_KEY)) {
       writeGames([]);

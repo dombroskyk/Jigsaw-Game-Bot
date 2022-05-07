@@ -1,6 +1,6 @@
 const { Client, Intents } = require("discord.js");
 const { getGames, getTags, initializeDatabase, writeGames, writeTags } = require("./dbLayer.js");
-const { getRawCommandArguments } = require("./textParsing.js");
+const { getRawCommandArguments, getPlayerNumBounds } = require("./textParsing.js");
 
 const READY_EVENT = "ready";
 const MESSAGE_CREATE_EVENT = "messageCreate";
@@ -12,6 +12,10 @@ client.on(READY_EVENT, () => {
   console.log(`Logged in as ${client.user.tag}!`);
 });
 
+client.on("error", error => {
+  console.log(`Client error: ${error}`);
+});
+
 client.on(MESSAGE_CREATE_EVENT, msg => {
   if (msg.author.bot) return;
 
@@ -21,19 +25,46 @@ client.on(MESSAGE_CREATE_EVENT, msg => {
   const messageTextLower = messageText.toLowerCase();
   if (messageTextLower.includes("list games")) {
     getGames().then(games => {
-      msg.reply(games);
+      msg.reply(games.join(", "));
     });
-  } else if (messageTextLower.includes("list tags")) {
+  }
+  else if (messageTextLower.includes("list tags")) {
     getTags().then(tags => {
-      console.log(tags);
       msg.reply(tags.join(", "));
     });
-  } else if (messageTextLower.includes("add game")) {
-    
-  } else if (messageTextLower.includes("add tag")) {
+  }
+  else if (messageTextLower.includes("add game")) {
+    const newGame = getRawCommandArguments(messageText, "add game").trim();
+
+    getGames().then(games => {
+      if (games.includes(newGame))
+      {
+        msg.reply("Game already added");
+      }
+      else
+      {
+        msg.reply("How many players? (#-##)").then(() => {
+          const filter = m => interaction.user.id === m.author.id && parsePlayerRange(m.content);
+          msg.channel.awaitMessages({ filter, time: 60000, max: 1, errors: ["time"]})
+            .then(messages => {
+              const message = messages.first();
+              const bounds = getPlayerNumBounds(message);
+              if (!bounds) return;
+
+              // message.reply
+            })
+            .catch(() => {
+              msg.followUp("Timeout - cancelling");
+            });
+        });
+      }
+    });
+  }
+  else if (messageTextLower.includes("add tag")) {
     const requestedTag = getRawCommandArguments(messageText, "add tag").trim();
 
     getTags().then(existingTags => {
+      //todo: case insensitive compare
       if (existingTags.includes(requestedTag))
       {
         msg.reply("Tag already exists");
@@ -46,7 +77,8 @@ client.on(MESSAGE_CREATE_EVENT, msg => {
       }
     });
     
-  } else if (messageTextLower.includes("delete game")) {}
+  }
+  else if (messageTextLower.includes("delete game")) {}
   else if (messageTextLower.includes("delete tag")) {
     const requestedTag = getRawCommandArguments(messageText, "delete tag").trim();
 
@@ -62,13 +94,16 @@ client.on(MESSAGE_CREATE_EVENT, msg => {
         msg.reply(`Deleted tag '${deletedTag[0]}'.`)
       }
     });
-  } else if (messageTextLower.includes("play")) {
+  }
+  else if (messageTextLower.includes("play")) {
     msg.reply("So you want to play a game...");
-  } else {
+  }
+  else {
     msg.reply("Available commands: play, list games, list tags, add game, add tag, delete game, delete tag");
   }
 });
 
 initializeDatabase();
 client.login(process.env['TOKEN']);
-
+// console.log("login");
+// console.log(client.isReady());
