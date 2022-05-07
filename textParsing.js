@@ -9,7 +9,7 @@ function getRawCommandArguments(messageContent, command)
 
 function getPlayerNumBounds(message)
 {
-  let messageContent = message.content.trim();
+  const messageContent = message.content.trim();
   if (!messageContent.includes('-'))
   {
     message.followUp("Invalid format supplied, expecting #-#");
@@ -30,7 +30,17 @@ function getPlayerNumBounds(message)
   return { lowerBound: leftNum, upperBound: rightNum, };
 }
 
+function getTagsFromMessage(message)
+{
+  const messageContent = message.content.trim();
+  const tagSplits = messageContent.split(",");
+  const trimmedTags = tagSplits.map(tag => { return tag.trim() });
+
+  return trimmedTags;
+}
+
 module.exports = {
   getRawCommandArguments,
   getPlayerNumBounds,
+  getTagsFromMessage,
 }

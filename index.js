@@ -1,12 +1,18 @@
 const { Client, Intents } = require("discord.js");
 const { getGames, getTags, initializeDatabase, writeGames, writeTags } = require("./dbLayer.js");
-const { getRawCommandArguments, getPlayerNumBounds } = require("./textParsing.js");
+const { getRawCommandArguments, getPlayerNumBounds, getTagsFromMessage } = require("./textParsing.js");
+const { gameToString } = require("./textFormatting.js");
 
 const READY_EVENT = "ready";
 const MESSAGE_CREATE_EVENT = "messageCreate";
 const intents = { intents: [Intents.FLAGS.GUILD_MEMBERS, Intents.FLAGS.GUILD_MESSAGE_REACTIONS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_SCHEDULED_EVENTS, Intents.FLAGS.GUILDS] };
 const client = new Client(intents);
 
+function followUpTimeout(waitingMessage)
+{
+  console.log(waitingMessage);
+  waitingMessage.followUp("Timeout - try again when ready");
+}
 
 client.on(READY_EVENT, () => {
   console.log(`Logged in as ${client.user.tag}!`);
@@ -25,7 +31,7 @@ client.on(MESSAGE_CREATE_EVENT, msg => {
   const messageTextLower = messageText.toLowerCase();
   if (messageTextLower.includes("list games")) {
     getGames().then(games => {
-      msg.reply(games.join(", "));
+      msg.reply(games.map(game => gameToString(game)));
     });
   }
   else if (messageTextLower.includes("list tags")) {
@@ -34,28 +40,42 @@ client.on(MESSAGE_CREATE_EVENT, msg => {
     });
   }
   else if (messageTextLower.includes("add game")) {
-    const newGame = getRawCommandArguments(messageText, "add game").trim();
+    const newGameName = getRawCommandArguments(messageText, "add game").trim();
 
     getGames().then(games => {
-      if (games.includes(newGame))
+      if (games.includes(newGameName))
       {
         msg.reply("Game already added");
       }
       else
       {
-        msg.reply("How many players? (#-##)").then(() => {
-          const filter = m => interaction.user.id === m.author.id && parsePlayerRange(m.content);
-          msg.channel.awaitMessages({ filter, time: 60000, max: 1, errors: ["time"]})
+        msg.reply("How many players? ex. #-#").then(() => {
+          const filter = m => msg.author.id === m.author.id;
+          msg.channel.awaitMessages({ filter, time: 60 * 1000, max: 1, errors: ["time"]})
             .then(messages => {
-              const message = messages.first();
-              const bounds = getPlayerNumBounds(message);
+              const playerNumMessage = messages.first();
+              const bounds = getPlayerNumBounds(playerNumMessage);
               if (!bounds) return;
 
-              // message.reply
+              playerNumMessage.reply(`Player range ${bounds.lowerBound} - ${bounds.upperBound} entered. What tags should be added to the game? ex. example1, example2, ex3, etc.`).then(() => {
+                playerNumMessage.channel.awaitMessages({ filter, time: 60000, max: 1, errors:["time"]})
+                  .then(tagMessages => {
+                    const tagsMessage = messages.first();
+                    const inputTags = getTagsFromMessage(tagsMessage);
+
+                    const game = {
+                      name: newGameName,
+                      players: bounds,
+                      tags: inputTags
+                    };
+                    games.push(game)
+                    writeGames(games);
+                    tagsMessage.followUp(`Successfully saved ${newGameName}, players: ${bounds.lowerBound} - ${bounds.upperBound}, tags: ${inputTags.join(", ")}`);
+                  })
+                  .catch(() => {followUpTimeout(playerNumMessage)});
+              });
             })
-            .catch(() => {
-              msg.followUp("Timeout - cancelling");
-            });
+            .catch(() => {followUpTimeout(msg)});
         });
       }
     });
