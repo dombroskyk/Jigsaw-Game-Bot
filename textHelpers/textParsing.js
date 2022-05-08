@@ -4,7 +4,7 @@ function getRawCommandArguments(messageContent, command)
 {
   const commandLength = command.length;
   const commandIndex = messageContent.toLowerCase().indexOf(command.toLowerCase());
-  return messageContent.slice(commandIndex + commandLength);
+  return messageContent.slice(commandIndex + commandLength).trim();
 }
 
 function getPlayerNumBounds(message)
