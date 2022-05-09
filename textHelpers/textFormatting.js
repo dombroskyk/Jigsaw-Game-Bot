@@ -1,7 +1,7 @@
 
-
+//todo: make a game object and move this there
 function gameToString(game) {
-  return `${game.name}, #${game.bounds.lowerBound} - ${game.bounds.upperBound}, tags: ${game.tags.join(", ")}`;
+  return `${game.name}, #: ${game.players.lowerBound} - ${game.players.upperBound}, Tags: ${game.tags.join(", ")}`;
 }
 
 module.exports = {

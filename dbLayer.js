@@ -33,7 +33,6 @@ async function writeTags(tags) {
 }
 
 async function writeGames(games) {
-  console.log(games);
   await db.set(GAMES_KEY, games.sort((a, b) => a.name.localeCompare(b.name)));
 }
 
