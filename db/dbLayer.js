@@ -1,9 +1,11 @@
-const Database = require("@replit/database")
+const Database = require("@replit/database");
+const { applyGamesFilter } = require("./filterHelpers.js");
 
 const db = new Database();
 
 const TAGS_KEY = "tags";
 const GAMES_KEY = "games";
+const GAMES_FILTER = { games: [], tags: [] }
 
 function initializeDatabase() {
   console.log("Initializing Database");
@@ -18,9 +20,12 @@ function initializeDatabase() {
   });
 }
 
-async function getGames() {
-  let games = await db.get(GAMES_KEY);
-  return games;
+async function getGames(customFilter = {}) {
+  const filter = Object.assign(getFilterObject(), customFilter);
+  const games = await db.get(GAMES_KEY);
+  const filteredGames = applyGamesFilter(games, filter);
+  
+  return filteredGames;
 }
 
 async function getTags() {
@@ -34,6 +39,10 @@ async function writeTags(tags) {
 
 async function writeGames(games) {
   await db.set(GAMES_KEY, games.sort((a, b) => a.name.localeCompare(b.name)));
+}
+
+function getFilterObject() {
+  return { games: [], tags: { yes: [], no: [] } };
 }
 
 module.exports = {
