@@ -2,7 +2,7 @@ const { Client, Intents } = require("discord.js");
 const { getGames, getTags, initializeDatabase, writeGames, writeTags } = require("./db/dbLayer.js");
 const { getRawCommandArguments, getPlayerNumBounds, getTagsFromMessage } = require("./textHelpers/textParsing.js");
 const { gameToString } = require("./textHelpers/textFormatting.js");
-const { handlePlayAGame } = require("./handlers/playAGameHandler.js")
+const { handlePlayAGame, handleFilterGame } = require("./handlers/playAGameHandler.js")
 const { handleAddGame } = require("./handlers/addGameHandler.js");
 const { handleAddTag } = require("./handlers/addTagHandler.js");
 const { handleListGames } = require("./handlers/listGamesHandler.js");
@@ -10,6 +10,7 @@ const { handleDeleteGame } = require("./handlers/deleteGameHandler.js");
 const { handleListTags } = require("./handlers/listTagsHandler.js");
 const { handleDeleteTag } = require("./handlers/deleteTagHandler.js");
 const { handleHelp } = require("./handlers/helpHandler.js");
+const { setInteraction } = require("./messageContextHelper.js");
 
 //todo: introduce typescript?
 //todo: democracy mode
@@ -53,7 +54,7 @@ client.on(MESSAGE_CREATE_EVENT, async msg => {
   }
   else if (messageTextLower.includes("delete game")) {
     const gameToDelete = getRawCommandArguments(messageText, "delete game");
-    
+
     handleDeleteGame(msg, gameToDelete);
   }
   else if (messageTextLower.includes("delete tag")) {
@@ -72,7 +73,14 @@ client.on(MESSAGE_CREATE_EVENT, async msg => {
 client.on('interactionCreate', interaction => {
   if (!interaction.isButton()) return;
 
-  console.log(interaction);
+  setInteraction(interaction);
+  if (interaction.customId === 'YesGame') {
+    interaction.reply("Excellent choice... enjoy!");
+  }
+
+  if (interaction.customId === 'NoGame') {
+    handleFilterGame();
+  }
 });
 
 initializeDatabase();
