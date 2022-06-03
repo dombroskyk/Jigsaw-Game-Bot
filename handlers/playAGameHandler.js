@@ -1,8 +1,8 @@
-const { MessageActionRow, MessageButton } = require("discord.js");
 const { getGames } = require("../db/dbLayer.js");
 const { gameToString } = require("../textHelpers/textFormatting.js");
 const { getNumPlayers } = require("../textHelpers/textParsing.js");
 const { setFilter, startMessageContext, setGame, addGameFilter, getCurrentGame, setPlayerFilter, getCurrInteraction } = require("../messageContextHelper.js");
+const { formatGameSuggestion } = require("../messageFormatter.js")
 
 async function handlePlayAGame(msg) {
   startMessageContext(msg);
@@ -20,22 +20,14 @@ async function handlePlayAGame(msg) {
 
     const filter = setPlayerFilter(numPlayers);
     const games = await getGames(filter);
+    if (!games.length) {
+      interaction.reply("We ran out of games! Lower your standards and try again");
+      return;
+    }
     const game = games[Math.floor(Math.random()*games.length)];
-    
-    const row = new MessageActionRow()
-      .addComponents([
-        new MessageButton()
-          .setCustomId("YesGame")
-          .setLabel("Let's play!")
-          .setStyle("SUCCESS"),
-        new MessageButton()
-          .setCustomId("NoGame")
-          .setLabel("Nah")
-          .setStyle("DANGER")
-    ]);
 
     setGame(game);
-    msg.reply({ content: `How about ${gameToString(game)}?`, components: [row] });
+    msg.reply(formatGameSuggestion(game));
 
 
     // const interactionFilter = i => {
@@ -57,27 +49,19 @@ async function handlePlayAGame(msg) {
 }
 
 async function handleFilterGame() {
+  const interaction = getCurrInteraction();
   const filter = addGameFilter(getCurrentGame().name);
 
   const games = await getGames(filter);
+  if (!games.length) {
+    interaction.reply("We ran out of games! Lower your standards and try again");
+    return;
+  }
   const game = games[Math.floor(Math.random()*games.length)];
-    
-  const row = new MessageActionRow()
-    .addComponents([
-      new MessageButton()
-        .setCustomId("YesGame")
-        .setLabel("Let's play!")
-        .setStyle("SUCCESS"),
-      new MessageButton()
-        .setCustomId("NoGame")
-        .setLabel("Nah")
-        .setStyle("DANGER")
-  ]);
 
   setGame(game);
 
-  const interaction = getCurrInteraction();
-  interaction.reply({ content: `How about ${gameToString(game)}?`, components: [row] });
+  interaction.reply(formatGameSuggestion(game));
 }
 
 module.exports = {
