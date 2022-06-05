@@ -2,7 +2,7 @@ const { Client, Intents } = require("discord.js");
 const { getGames, getTags, initializeDatabase, writeGames, writeTags } = require("./db/dbLayer.js");
 const { getRawCommandArguments, getPlayerNumBounds, getTagsFromMessage } = require("./textHelpers/textParsing.js");
 const { gameToString } = require("./textHelpers/textFormatting.js");
-const { handlePlayAGame, handleFilterGame } = require("./handlers/playAGameHandler.js")
+const { handlePlayAGame, handleFilterGame, handleFilterTag } = require("./handlers/playAGameHandler.js")
 const { handleAddGame } = require("./handlers/addGameHandler.js");
 const { handleAddTag } = require("./handlers/addTagHandler.js");
 const { handleListGames } = require("./handlers/listGamesHandler.js");
@@ -76,14 +76,16 @@ client.on('interactionCreate', interaction => {
   setInteraction(interaction);
   if (interaction.customId === 'YesGame') {
     interaction.reply("Excellent choice... enjoy!");
+    return;
   }
 
   if (interaction.customId === 'NoGame') {
     handleFilterGame();
   }
+  else {
+    handleFilterTag();
+  }
 });
 
 initializeDatabase();
 client.login(process.env['TOKEN']);
-// console.log("login");
-// console.log(client.isReady());

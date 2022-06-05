@@ -44,9 +44,16 @@ function getNumPlayers(message) {
   return numberPlayers;
 }
 
+function getTagAndIntentionFromId(customId) {
+  const splitCustomId = customId.trim().split("_");
+  
+  return { tag: splitCustomId[0], intention: splitCustomId[1]};
+}
+
 module.exports = {
   getRawCommandArguments,
   getPlayerNumBounds,
   getTagsFromMessage,
   getNumPlayers,
+  getTagAndIntentionFromId,
 }

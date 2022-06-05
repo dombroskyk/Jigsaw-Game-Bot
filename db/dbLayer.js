@@ -21,9 +21,12 @@ function initializeDatabase() {
 }
 
 async function getGames(customFilter = {}) {
+  console.log(customFilter);
   const filter = Object.assign(getFilterObject(), customFilter);
+  console.log(filter);
   const games = await db.get(GAMES_KEY);
   const filteredGames = applyGamesFilter(games, filter);
+  console.log(filteredGames);
   
   return filteredGames;
 }

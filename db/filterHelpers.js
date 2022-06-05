@@ -1,9 +1,6 @@
 
 function applyGamesFilter(games, filter) {
-  console.log(games);
-  console.log(filter);
   const filteredGames = games.filter(game => {
-      console.log(game);
     if ("numPlayers" in filter
         && !(game.players.lowerBound <= filter.numPlayers
           && game.players.upperBound >= filter.numPlayers)) {
@@ -13,21 +10,23 @@ function applyGamesFilter(games, filter) {
     if ("games" in filter) {
       const matchesGameName = (gameFilterElement) => gameFilterElement.toLowerCase() === game.name.toLowerCase();
       if (filter.games.some(matchesGameName)) {
-        console.log(`${game.name} matched then name and is filtered out`);
         return false;
       }
     }
-    
+
+    if ("tags" in filter) {
+      if ("no" in filter.tags) {
+        return !filter.tags.no.some((noTag) => game.tags.some((gameTag) => gameTag.toLowerCase() === noTag.toLowerCase()))
+      }
+      
+      if ("yes" in filter.tags) {
+        return !filter.tags.yes.some((yesTag) => game.tags.some((gameTag) => gameTag.toLowerCase() === yesTag.toLowerCase()))
+      }
+    }
 
     return true;
-    // const matchesTagReject = (noTagElement) => noTagElement.toLowerCase()
-    // if (gameFilter.tags.no.some(matchesTagReject))
   });
-
-  console.log("filter");
-  console.log(filter);
-  console.log("filteredGames");
-  console.log(filteredGames);
+  
   return filteredGames;
 }
 

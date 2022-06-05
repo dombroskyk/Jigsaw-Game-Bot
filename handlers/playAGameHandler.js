@@ -1,7 +1,7 @@
 const { getGames } = require("../db/dbLayer.js");
 const { gameToString } = require("../textHelpers/textFormatting.js");
-const { getNumPlayers } = require("../textHelpers/textParsing.js");
-const { setFilter, startMessageContext, setGame, addGameFilter, getCurrentGame, setPlayerFilter, getCurrInteraction } = require("../messageContextHelper.js");
+const { getNumPlayers, getTagAndIntentionFromId } = require("../textHelpers/textParsing.js");
+const { setFilter, startMessageContext, setGame, addGameFilter, getCurrentGame, setPlayerFilter, getCurrInteraction, addTagFilter } = require("../messageContextHelper.js");
 const { formatGameSuggestion } = require("../messageFormatter.js")
 
 async function handlePlayAGame(msg) {
@@ -28,23 +28,6 @@ async function handlePlayAGame(msg) {
 
     setGame(game);
     msg.reply(formatGameSuggestion(game));
-
-
-    // const interactionFilter = i => {
-    //   i.deferUpdate();
-    //   return i.user.id === interaction.user.id;
-    // };
-    // msg.awaitMessageComponent({ filter, componentType: "BUTTON", time: 60 * 1000 }).then(interaction => console.log(interaction));
-
-  //   const collector = msg.createMessageComponentCollector({ componentType: 'BUTTON', time: 60 * 1000, max: 1});
-
-  //   collector.on('collect', i => {
-  //     console.log(i);
-  //   });
-
-  //   collector.on('end', collected => {
-  //     console.log(collected);
-  //   });
   });
 }
 
@@ -64,7 +47,27 @@ async function handleFilterGame() {
   interaction.reply(formatGameSuggestion(game));
 }
 
+async function handleFilterTag() {
+  const interaction = getCurrInteraction();
+  const clickedButtonId = interaction.customId;
+  const tagAndIntention = getTagAndIntentionFromId(clickedButtonId);
+  console.log(tagAndIntention);
+
+  const filter = addTagFilter(tagAndIntention);
+  const games = await getGames(filter);
+  if (!games.length) {
+    interaction.reply("We ran out of games! Lower your standards and try again");
+    return;
+  }
+  const game = games[Math.floor(Math.random()*games.length)];
+
+  setGame(game);
+
+  interaction.reply(formatGameSuggestion(game));
+}
+
 module.exports = {
   handlePlayAGame,
   handleFilterGame,
+  handleFilterTag,
 }

@@ -22,6 +22,23 @@ function addGameFilter(gameName) {
   return currFilter;
 }
 
+function addTagFilter(tagAndIntention) {
+  if (!("tags" in currFilter)) {
+    currFilter.tags = { yes: [], no: [] };
+  }
+  
+  if (!("yes" in currFilter.tags)) {
+    currFilter.tags.yes = [];
+  }
+
+  if (!("no" in currFilter.tags)) {
+    currFilter.tags.no = [];
+  }
+
+  currFilter.tags[tagAndIntention.intention].push(tagAndIntention.tag);
+  return currFilter;
+}
+
 function setPlayerFilter(numPlayers) {
   currFilter.numPlayers = numPlayers;
   return currFilter;
@@ -52,4 +69,5 @@ module.exports = {
   addGameFilter,
   getCurrentGame,
   getCurrInteraction,
+  addTagFilter,
 }

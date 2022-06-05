@@ -1,18 +1,3 @@
 {
-  "files": {
-    "db/dbLayer.js": [
-      {
-        "id": "56b72b09-f56d-40c3-b2b4-cc30c0915284",
-        "line": 24,
-        "version": 688,
-        "index": 583
-      },
-      {
-        "id": "91fa7b19-5589-41ab-91c5-afe8d274590f",
-        "line": 25,
-        "version": 688,
-        "index": 624
-      }
-    ]
-  }
+  "files": {}
 }

@@ -19,12 +19,12 @@ function formatGameSuggestion(game) {
     const tagRow = new MessageActionRow()
       .addComponents([
         new MessageButton()
-          .setCustomId(`${tag}Yes`)
-          .setLabel(`Yes ${tag}`)
+          .setCustomId(`${tag}_yes`)
+          .setLabel(`Filter ${tag}`)
           .setStyle("PRIMARY"),
         new MessageButton()
-          .setCustomId(`${tag}No`)
-          .setLabel(`Not ${tag}`)
+          .setCustomId(`${tag}_no`)
+          .setLabel(`Filter Out ${tag}`)
           .setStyle("DANGER")
     ]);
     tagRows.push(tagRow);
