@@ -19,15 +19,8 @@ async function handlePlayAGame(msg) {
     }
 
     const filter = setPlayerFilter(numPlayers);
-    const games = await getGames(filter);
-    if (!games.length) {
-      interaction.reply("We ran out of games! Lower your standards and try again");
-      return;
-    }
-    const game = games[Math.floor(Math.random()*games.length)];
-
-    setGame(game);
-    msg.reply(formatGameSuggestion(game));
+    
+    await suggestGame(filter, interaction);
   });
 }
 
@@ -35,16 +28,7 @@ async function handleFilterGame() {
   const interaction = getCurrInteraction();
   const filter = addGameFilter(getCurrentGame().name);
 
-  const games = await getGames(filter);
-  if (!games.length) {
-    interaction.reply("We ran out of games! Lower your standards and try again");
-    return;
-  }
-  const game = games[Math.floor(Math.random()*games.length)];
-
-  setGame(game);
-
-  interaction.reply(formatGameSuggestion(game));
+  await suggestGame(filter, interaction);
 }
 
 async function handleFilterTag() {
@@ -54,16 +38,20 @@ async function handleFilterTag() {
   console.log(tagAndIntention);
 
   const filter = addTagFilter(tagAndIntention);
+  await suggestGame(filter, interaction);
+}
+
+async function suggestGame(filter, replyTo) {
   const games = await getGames(filter);
   if (!games.length) {
-    interaction.reply("We ran out of games! Lower your standards and try again");
+    replyTo.reply("We ran out of games! Lower your standards and try again");
     return;
   }
   const game = games[Math.floor(Math.random()*games.length)];
 
   setGame(game);
 
-  interaction.reply(formatGameSuggestion(game));
+  replyTo.reply(formatGameSuggestion(game));
 }
 
 module.exports = {
