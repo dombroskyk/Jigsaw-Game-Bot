@@ -2,26 +2,27 @@ const { getGames } = require("../db/dbLayer.js");
 const { gameToString } = require("../textHelpers/textFormatting.js");
 const { getNumPlayers, getTagAndIntentionFromId } = require("../textHelpers/textParsing.js");
 const { setFilter, startMessageContext, setGame, addGameFilter, getCurrentGame, setPlayerFilter, getCurrInteraction, addTagFilter } = require("../messageContextHelper.js");
-const { formatGameSuggestion } = require("../messageFormatter.js")
+const { formatGameSuggestion, formatNumberOfPlayersMessage } = require("../messageFormatter.js")
 
-async function handlePlayAGame(msg) {
-  startMessageContext(msg);
-  msg.reply("So you want to play a game... How many people want to play?").then(async () => {
+function handlePlayAGame(msg) {
+  msg.reply(formatNumberOfPlayersMessage());
+  
+  // msg.reply("So you want to play a game... How many people want to play?").then(async () => {
     
-    const authorFilter = m => msg.author.id === m.author.id;
-    const messages = await msg.channel.awaitMessages({ authorFilter, time: 60 * 1000, max: 1, errors: ["time"] });
-    const numPlayerMessage = messages.first();
+  //   const authorFilter = m => msg.author.id === m.author.id;
+  //   const messages = await msg.channel.awaitMessages({ authorFilter, time: 60 * 1000, max: 1, errors: ["time"] });
+  //   const numPlayerMessage = messages.first();
     
-    const numPlayers = getNumPlayers(numPlayerMessage);
-    if (numPlayers === 0) {
-      numPlayerMessage.reply("No players? Too bad.");
-      return;
-    }
+  //   const numPlayers = getNumPlayers(numPlayerMessage);
+  //   if (numPlayers === 0) {
+  //     numPlayerMessage.reply("No players? Too bad.");
+  //     return;
+  //   }
 
-    const filter = setPlayerFilter(numPlayers);
+  //   const filter = setPlayerFilter(numPlayers);
     
-    await suggestGame(filter, interaction);
-  });
+  //   await suggestGame(filter, msg);
+  // });
 }
 
 async function handleFilterGame() {
@@ -35,7 +36,6 @@ async function handleFilterTag() {
   const interaction = getCurrInteraction();
   const clickedButtonId = interaction.customId;
   const tagAndIntention = getTagAndIntentionFromId(clickedButtonId);
-  console.log(tagAndIntention);
 
   const filter = addTagFilter(tagAndIntention);
   await suggestGame(filter, interaction);

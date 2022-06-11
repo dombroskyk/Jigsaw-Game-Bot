@@ -9,12 +9,17 @@ const { handleListGames } = require("./handlers/listGamesHandler.js");
 const { handleDeleteGame } = require("./handlers/deleteGameHandler.js");
 const { handleListTags } = require("./handlers/listTagsHandler.js");
 const { handleDeleteTag } = require("./handlers/deleteTagHandler.js");
+//const { handleSteam } = require("./handlers/steamHandler.js");
 const { handleHelp } = require("./handlers/helpHandler.js");
-const { setInteraction } = require("./messageContextHelper.js");
+const { setInteraction, startMessageContext } = require("./messageContextHelper.js");
 
 //todo: introduce typescript?
 //todo: democracy mode
 //todo: steam/epic integration
+// remove tag interaction
+// top/bottom buttons
+// player # select buttons
+// yes interaction filter is "and", not "or"
 const READY_EVENT = "ready";
 const MESSAGE_CREATE_EVENT = "messageCreate";
 const ERROR_EVENT = "error";
@@ -34,6 +39,8 @@ client.on(MESSAGE_CREATE_EVENT, async msg => {
 
   if (!msg.mentions.users.filter(u => u.id === client.user.id).size) return;
 
+  startMessageContext(msg);
+  
   const messageText = msg.content;
   const messageTextLower = messageText.toLowerCase();
   if (messageTextLower.includes("list games")) {
@@ -65,6 +72,10 @@ client.on(MESSAGE_CREATE_EVENT, async msg => {
   else if (messageTextLower.includes("play a game")) {
     await handlePlayAGame(msg);
   }
+  else if (messageTextLower.includes("steam"))
+  {
+    // await handleSteam(msg);
+  }
   else {
     handleHelp(msg);
   }
@@ -88,4 +99,5 @@ client.on('interactionCreate', interaction => {
 });
 
 initializeDatabase();
+console.log("Attempting to log in");
 client.login(process.env['TOKEN']);
