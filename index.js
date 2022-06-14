@@ -2,8 +2,8 @@ const { Client, Intents } = require("discord.js");
 const { getGames, getTags, initializeDatabase, writeGames, writeTags } = require("./db/dbLayer.js");
 const { getRawCommandArguments, getPlayerNumBounds, getTagsFromMessage } = require("./textHelpers/textParsing.js");
 const { gameToString } = require("./textHelpers/textFormatting.js");
-const { handlePlayAGame, handleFilterGame, handleFilterTag } = require("./handlers/playAGameHandler.js")
-const { handleAddGame } = require("./handlers/addGameHandler.js");
+const { handlePlayAGame, handleFilterGame, handleFilterTag, handleFilterPlayer } = require("./handlers/playAGameHandler.js")
+const { handleAddGame, handleAddPlayerRange } = require("./handlers/addGameHandler.js");
 const { handleAddTag } = require("./handlers/addTagHandler.js");
 const { handleListGames } = require("./handlers/listGamesHandler.js");
 const { handleDeleteGame } = require("./handlers/deleteGameHandler.js");
@@ -17,9 +17,10 @@ const { setInteraction, startMessageContext } = require("./messageContextHelper.
 //todo: democracy mode
 //todo: steam/epic integration
 // remove tag interaction
-// top/bottom buttons
 // player # select buttons
 // yes interaction filter is "and", not "or"
+// range player buttons
+// string constants to common file?
 const READY_EVENT = "ready";
 const MESSAGE_CREATE_EVENT = "messageCreate";
 const ERROR_EVENT = "error";
@@ -83,15 +84,21 @@ client.on(MESSAGE_CREATE_EVENT, async msg => {
 
 client.on('interactionCreate', interaction => {
   if (!interaction.isButton()) return;
-
   setInteraction(interaction);
+  
   if (interaction.customId === 'YesGame') {
     interaction.reply("Excellent choice... enjoy!");
     return;
-  }
-
-  if (interaction.customId === 'NoGame') {
+  } 
+  else if (interaction.customId === 'NoGame') {
     handleFilterGame();
+  }
+  else if (interaction.customId.includes("_numPlayer") && interaction.message.content.includes("So you want to play a game"))
+  {
+    handleFilterPlayer();
+  }
+  else if (interaction.customId.includes("_numPlayer") && interaction.message.content.includes("How many players?")) {
+    handleAddPlayerRange();
   }
   else {
     handleFilterTag();

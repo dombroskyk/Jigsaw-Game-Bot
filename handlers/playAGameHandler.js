@@ -1,28 +1,19 @@
 const { getGames } = require("../db/dbLayer.js");
 const { gameToString } = require("../textHelpers/textFormatting.js");
-const { getNumPlayers, getTagAndIntentionFromId } = require("../textHelpers/textParsing.js");
-const { setFilter, startMessageContext, setGame, addGameFilter, getCurrentGame, setPlayerFilter, getCurrInteraction, addTagFilter } = require("../messageContextHelper.js");
+const { getNumPlayersFromId, getTagAndIntentionFromId } = require("../textHelpers/textParsing.js");
+const { setFilter, startMessageContext, setGame, addGameFilter, getCurrentGame, addPlayerFilter, getCurrInteraction, addTagFilter } = require("../messageContextHelper.js");
 const { formatGameSuggestion, formatNumberOfPlayersMessage } = require("../messageFormatter.js")
 
 function handlePlayAGame(msg) {
   msg.reply(formatNumberOfPlayersMessage());
-  
-  // msg.reply("So you want to play a game... How many people want to play?").then(async () => {
-    
-  //   const authorFilter = m => msg.author.id === m.author.id;
-  //   const messages = await msg.channel.awaitMessages({ authorFilter, time: 60 * 1000, max: 1, errors: ["time"] });
-  //   const numPlayerMessage = messages.first();
-    
-  //   const numPlayers = getNumPlayers(numPlayerMessage);
-  //   if (numPlayers === 0) {
-  //     numPlayerMessage.reply("No players? Too bad.");
-  //     return;
-  //   }
+}
 
-  //   const filter = setPlayerFilter(numPlayers);
-    
-  //   await suggestGame(filter, msg);
-  // });
+async function handleFilterPlayer() {
+  const interaction = getCurrInteraction();
+  const numPlayers = getNumPlayersFromId(interaction.customId);
+  
+  const filter = addPlayerFilter(numPlayers)
+  await suggestGame(filter, interaction);
 }
 
 async function handleFilterGame() {
@@ -56,6 +47,7 @@ async function suggestGame(filter, replyTo) {
 
 module.exports = {
   handlePlayAGame,
+  handleFilterPlayer,
   handleFilterGame,
   handleFilterTag,
 }

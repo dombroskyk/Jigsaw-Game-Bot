@@ -34,14 +34,8 @@ function getTagsFromMessage(message) {
   return trimmedTags;
 }
 
-function getNumPlayers(message) {
-  const numberPlayers = parseInt(message.content.trim());
-  if (isNaN(numberPlayers)) {
-    message.reply("A number was not entered for number of players");
-    numberPlayers = 0;
-  }
-    
-  return numberPlayers;
+function getNumPlayersFromId(id) {
+  return id.split("_")[0];
 }
 
 function getTagAndIntentionFromId(customId) {
@@ -54,6 +48,6 @@ module.exports = {
   getRawCommandArguments,
   getPlayerNumBounds,
   getTagsFromMessage,
-  getNumPlayers,
+  getNumPlayersFromId,
   getTagAndIntentionFromId,
 }

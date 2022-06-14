@@ -25,53 +25,55 @@ function formatGameSuggestion(game) {
         .setStyle(DiscordStyles.DANGER.description)
   ]);
 
-  let tagRows = [];
-  const yesTagRow = new MessageActionRow();
-  const noTagRow = new MessageActionRow();
+  let yesTagComponents = [];
+  let noTagComponents = [];
   for (let i = 0; i < game.tags.length; i++) {
-    yesTagRow.addComponents([
+    const tag = game.tags[i];
+    yesTagComponents.push(
       new MessageButton()
         .setCustomId(`${tag}_yes`)
-        .setLabel(`Filter ${tag}`)
+        .setLabel(`Filter For ${tag}`)
         .setStyle(DiscordStyles.PRIMARY.description),
-    ]);
-    noTagRow.addComponents([
+    );
+    noTagComponents.push(
       new MessageButton()
         .setCustomId(`${tag}_no`)
         .setLabel(`Filter Out ${tag}`)
         .setStyle(DiscordStyles.DANGER.description),
-    ]);
-    
-    if ((i+1) % 5 === 0) {
-      tagRows.push(yesTagRow, noTagRow);
-      yesTagRow = new MessageActionRow();
-      noTagRow = new MessageActionRow();
-    }
+    );
   }
     
-  if ((i+1) % 5 !== 0) {
-    tagRows.push(yesTagRow, noTagRow);
+  let tagRows = [];
+  tagRows.push(new MessageActionRow().addComponents(yesTagComponents.slice(0,5)));
+  tagRows.push(new MessageActionRow().addComponents(noTagComponents.slice(0,5)));
+  if (yesTagComponents.length > 5)
+  {
+    tagRows.push(new MessageActionRow().addComponents(yesTagComponents.slice(5)));
+    tagRows.push(new MessageActionRow().addComponents(noTagComponents.slice(5)));
   }
   
   return { content: `How about '${gameToString(game)}'?`, components: [gameRow, ...tagRows] };
 }
 
-function generatePlayerButtons() {
+function generatePlayerButtons(selectedPlayerButtons = []) {
   let playerNumButtons = []
-  for (let i = 0; i < 9; i++) {
+  
+  for (let i = 1; i < 10; i++) {
+    const style = selectedPlayerButtons.includes((i).toString()) ? DiscordStyles.SUCCESS.description : DiscordStyles.PRIMARY.description;
+    
     playerNumButtons.push(
       new MessageButton()
-        .setCustomId(`${i+1}_numPlayer`)
-        .setLabel(`${i+1}`)
-        .setStyle(DiscordStyles.PRIMARY.description),
+        .setCustomId(`${i}_numPlayer`)
+        .setLabel(`${i}`)
+        .setStyle(style),
     );
   }
 
   playerNumButtons.push(
     new MessageButton()
-      .setCustomId(`10+_numPlayer`)
+      .setCustomId(`10_numPlayer`)
       .setLabel(`10+`)
-      .setStyle(DiscordStyles.PRIMARY.description),
+      .setStyle(selectedPlayerButtons.includes('10') ? DiscordStyles.SUCCESS.description : DiscordStyles.PRIMARY.description),
   );
 
   let playerNumRows = [];
@@ -86,7 +88,13 @@ function formatNumberOfPlayersMessage() {
   return { content: text, components: generatePlayerButtons() };
 }
 
+function formatNewGameNumPlayersMessage(selectedPlayerButtons = []) {
+  const text = "How many players? Click the buttons for the range of players that can play:";
+  return { content: text, components: generatePlayerButtons(selectedPlayerButtons) };
+}
+
 module.exports = {
   formatGameSuggestion,
   formatNumberOfPlayersMessage,
+  formatNewGameNumPlayersMessage,
 }
