@@ -3,8 +3,10 @@ let currMessage = null;
 let currInteraction = null;
 let currFilter = {};
 let currGame = {};
+let currPlayerRange = [];
 
 function startMessageContext(message) {
+  currPlayerRange = [];
   setMessageContext(message, {});
 }
 
@@ -39,9 +41,14 @@ function addTagFilter(tagAndIntention) {
   return currFilter;
 }
 
-function setPlayerFilter(numPlayers) {
+function addPlayerFilter(numPlayers) {
   currFilter.numPlayers = numPlayers;
   return currFilter;
+}
+
+function addPlayerRange(numPlayer) {
+  currPlayerRange.push(numPlayer);
+  return currPlayerRange.sort();
 }
 
 function setGame(game) {
@@ -65,9 +72,10 @@ module.exports = {
   startMessageContext,
   setGame,
   setInteraction,
-  setPlayerFilter,
+  addPlayerFilter,
   addGameFilter,
   getCurrentGame,
   getCurrInteraction,
   addTagFilter,
+  addPlayerRange,
 }
