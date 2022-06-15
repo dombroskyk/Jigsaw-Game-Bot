@@ -17,9 +17,7 @@ const { setInteraction, startMessageContext } = require("./messageContextHelper.
 //todo: democracy mode
 //todo: steam/epic integration
 // remove tag interaction
-// player # select buttons
 // yes interaction filter is "and", not "or"
-// range player buttons
 // string constants to common file?
 const READY_EVENT = "ready";
 const MESSAGE_CREATE_EVENT = "messageCreate";
@@ -37,7 +35,6 @@ client.on(ERROR_EVENT, error => {
 
 client.on(MESSAGE_CREATE_EVENT, async msg => {
   if (msg.author.bot) return;
-
   if (!msg.mentions.users.filter(u => u.id === client.user.id).size) return;
 
   startMessageContext(msg);
@@ -71,7 +68,7 @@ client.on(MESSAGE_CREATE_EVENT, async msg => {
     handleDeleteTag(msg, tagToDelete);
   }
   else if (messageTextLower.includes("play a game")) {
-    await handlePlayAGame(msg);
+    handlePlayAGame(msg);
   }
   else if (messageTextLower.includes("steam"))
   {
