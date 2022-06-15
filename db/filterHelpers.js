@@ -13,14 +13,14 @@ function applyGamesFilter(games, filter) {
         return false;
       }
     }
-
+    
     if ("tags" in filter) {
-      if ("no" in filter.tags) {
+      if ("no" in filter.tags && filter.tags.no.length > 0) {
         return !filter.tags.no.some((noTag) => game.tags.some((gameTag) => gameTag.toLowerCase() === noTag.toLowerCase()))
       }
-      
-      if ("yes" in filter.tags) {
-        return !filter.tags.yes.some((yesTag) => game.tags.some((gameTag) => gameTag.toLowerCase() === yesTag.toLowerCase()))
+
+      if ("yes" in filter.tags && filter.tags.yes.length > 0) {
+        return filter.tags.yes.every((yesTag) => game.tags.some((gameTag) => gameTag.toLowerCase() === yesTag.toLowerCase()));
       }
     }
 

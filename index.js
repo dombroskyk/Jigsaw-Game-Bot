@@ -17,7 +17,6 @@ const { setInteraction, startMessageContext } = require("./messageContextHelper.
 //todo: democracy mode
 //todo: steam/epic integration
 // remove tag interaction
-// yes interaction filter is "and", not "or"
 // string constants to common file?
 const READY_EVENT = "ready";
 const MESSAGE_CREATE_EVENT = "messageCreate";
