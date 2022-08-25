@@ -23,7 +23,7 @@ function formatGameSuggestion(game) {
         .setCustomId(NO_GAME_BUTTON_ID)
         .setLabel(NO_GAME_LABEL)
         .setStyle(DiscordStyles.DANGER.description)
-  ]);
+    ]);
 
   let yesTagComponents = [];
   let noTagComponents = [];
@@ -42,25 +42,24 @@ function formatGameSuggestion(game) {
         .setStyle(DiscordStyles.DANGER.description),
     );
   }
-    
+
   let tagRows = [];
-  tagRows.push(new MessageActionRow().addComponents(yesTagComponents.slice(0,5)));
-  tagRows.push(new MessageActionRow().addComponents(noTagComponents.slice(0,5)));
-  if (yesTagComponents.length > 5)
-  {
+  tagRows.push(new MessageActionRow().addComponents(yesTagComponents.slice(0, 5)));
+  tagRows.push(new MessageActionRow().addComponents(noTagComponents.slice(0, 5)));
+  if (yesTagComponents.length > 5) {
     tagRows.push(new MessageActionRow().addComponents(yesTagComponents.slice(5)));
     tagRows.push(new MessageActionRow().addComponents(noTagComponents.slice(5)));
   }
-  
+
   return { content: `How about '${gameToString(game)}'?`, components: [gameRow, ...tagRows] };
 }
 
 function generatePlayerButtons(selectedPlayerButtons = []) {
   let playerNumButtons = []
-  
+
   for (let i = 1; i < 10; i++) {
     const style = selectedPlayerButtons.includes((i).toString()) ? DiscordStyles.SUCCESS.description : DiscordStyles.PRIMARY.description;
-    
+
     playerNumButtons.push(
       new MessageButton()
         .setCustomId(`${i}_numPlayer`)
@@ -77,20 +76,39 @@ function generatePlayerButtons(selectedPlayerButtons = []) {
   );
 
   let playerNumRows = [];
-  playerNumRows.push(new MessageActionRow().addComponents(playerNumButtons.slice(0,5)));
+  playerNumRows.push(new MessageActionRow().addComponents(playerNumButtons.slice(0, 5)));
   playerNumRows.push(new MessageActionRow().addComponents(playerNumButtons.slice(5)));
 
   return playerNumRows;
 }
 
+function generateSkipAndEndButtons() {
+  const skipButton = new MessageButton()
+    .setCustomId("skipGame")
+    .setLabel("Skip")
+    .setStyle(DiscordStyles.DANGER.description);
+
+  const endButton = new MessageButton()
+    .setCustomId("end")
+    .setLabel("End Session")
+    .setStyle(DiscordStyles.DANGER.description);
+
+  return new MessageActionRow().addComponents([skipButton, endButton]);
+}
+
 function formatNumberOfPlayersMessage() {
-  const text = "So you want to play a game... How many people want to play?";
+  const text = "So you want to play a game...";
   return { content: text, components: generatePlayerButtons() };
 }
 
-function formatNewGameNumPlayersMessage(selectedPlayerButtons = []) {
-  const text = "How many players? Click the buttons for the range of players that can play:";
-  return { content: text, components: generatePlayerButtons(selectedPlayerButtons) };
+function formatNewGameNumPlayersMessage(gameName, includeSkipEndButtons, selectedPlayerButtons = []) {
+  const text = `How many players can play ${gameName}? Click the buttons for the range of players that can play:`;
+  let componentRows = generatePlayerButtons(selectedPlayerButtons);
+  if (includeSkipEndButtons) {
+    componentRows.push(generateSkipAndEndButtons());
+  }
+
+  return { content: text, components: componentRows };
 }
 
 module.exports = {

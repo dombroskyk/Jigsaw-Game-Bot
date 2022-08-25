@@ -11,7 +11,7 @@ function handlePlayAGame(msg) {
 async function handleFilterPlayer() {
   const interaction = getCurrInteraction();
   const numPlayers = getNumPlayersFromId(interaction.customId);
-  
+
   const filter = addPlayerFilter(numPlayers)
   await suggestGame(filter, interaction);
 }
@@ -38,7 +38,7 @@ async function suggestGame(filter, replyTo) {
     replyTo.reply("We ran out of games! Lower your standards and try again");
     return;
   }
-  const game = games[Math.floor(Math.random()*games.length)];
+  const game = games[Math.floor(Math.random() * games.length)];
 
   setGame(game);
 

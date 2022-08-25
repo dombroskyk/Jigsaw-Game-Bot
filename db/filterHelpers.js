@@ -20,7 +20,13 @@ function applyGamesFilter(games, filter) {
       }
 
       if ("yes" in filter.tags && filter.tags.yes.length > 0) {
-        return filter.tags.yes.every((yesTag) => game.tags.some((gameTag) => gameTag.toLowerCase() === yesTag.toLowerCase()));
+        return filter.tags.yes.every((yesTag) => { 
+          console.log(`yesTag: ${yesTag}`);
+          return game.tags.some((gameTag) => {
+            console.log(`gameTag: ${gameTag}`);
+            return gameTag.toLowerCase() === yesTag.toLowerCase()
+          });
+        });
       }
     }
 
