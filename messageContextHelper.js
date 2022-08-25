@@ -1,4 +1,5 @@
 
+let client = null;
 let currMessage = null;
 let currInteraction = null;
 let currFilter = {};
@@ -15,35 +16,35 @@ function setMessageContext(message, filter) {
   currMessage = message;
 }
 
-function addGameFilter(gameName) {
-  if (!("games" in currFilter)) {
-    currFilter.games = [];
+function addGameFilter(filter, gameName) {
+  if (!("games" in filter)) {
+    filter.games = [];
   }
 
-  currFilter.games.push(gameName);
-  return currFilter;
+  filter.games.push(gameName);
+  return filter;
 }
 
-function addTagFilter(tagAndIntention) {
-  if (!("tags" in currFilter)) {
-    currFilter.tags = { yes: [], no: [] };
-  }
-  
-  if (!("yes" in currFilter.tags)) {
-    currFilter.tags.yes = [];
+function addTagFilter(filter, tagAndIntention) {
+  if (!("tags" in filter)) {
+    filter.tags = { yes: [], no: [] };
   }
 
-  if (!("no" in currFilter.tags)) {
-    currFilter.tags.no = [];
+  if (!("yes" in filter.tags)) {
+    filter.tags.yes = [];
   }
 
-  currFilter.tags[tagAndIntention.intention].push(tagAndIntention.tag);
-  return currFilter;
+  if (!("no" in filter.tags)) {
+    filter.tags.no = [];
+  }
+
+  filter.tags[tagAndIntention.intention].push(tagAndIntention.tag);
+  return filter;
 }
 
-function addPlayerFilter(numPlayers) {
-  currFilter.numPlayers = numPlayers;
-  return currFilter;
+function addPlayerNumFilter(filter, numPlayers) {
+  filter.numPlayers = numPlayers;
+  return filter;
 }
 
 function addPlayerRange(numPlayer) {
@@ -56,7 +57,7 @@ function setGame(game) {
 }
 
 function setInteraction(interaction) {
-  console.log(interaction);
+  //console.log(interaction);
   currInteraction = interaction;
 }
 
@@ -68,14 +69,24 @@ function getCurrInteraction() {
   return currInteraction;
 }
 
+function setClient(clientInst) {
+  client = clientInst;
+}
+
+function getClient() {
+  return client;
+}
+
 module.exports = {
   startMessageContext,
   setGame,
   setInteraction,
-  addPlayerFilter,
+  addPlayerNumFilter,
   addGameFilter,
   getCurrentGame,
   getCurrInteraction,
   addTagFilter,
   addPlayerRange,
+  setClient,
+  getClient,
 }
