@@ -55,20 +55,6 @@ client.on(MESSAGE_CREATE_EVENT, async msg => {
   if (messageTextLower.includes("list games")) {
     await handleListGames(msg);
   }
-  else if (messageTextLower.includes("list tags")) {
-    handleListTags(msg);
-  }
-  else if (messageTextLower.includes("delete game")) {
-    const gameToDelete = getRawCommandArguments(messageText, "delete game");
-
-    handleDeleteGame(msg, gameToDelete);
-  }
-  else if (messageTextLower.includes("list steam ids") && DEBUG_MODE) {
-    handleListSteamIds(msg);
-  }
-  else if (messageTextLower.includes("steam")) {
-    handleSteam(msg);
-  }
   else {
     handleHelp(msg);
   }
