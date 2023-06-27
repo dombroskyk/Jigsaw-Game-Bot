@@ -6,17 +6,17 @@ let currFilter = {};
 let currGame = {};
 let currPlayerRange = [];
 
-function startMessageContext(message) {
+export function startMessageContext(message) {
   currPlayerRange = [];
   setMessageContext(message, {});
 }
 
-function setMessageContext(message, filter) {
+export function setMessageContext(message, filter) {
   currFilter = filter;
   currMessage = message;
 }
 
-function addGameFilter(filter, gameName) {
+export function addGameFilter(filter, gameName) {
   if (!("games" in filter)) {
     filter.games = [];
   }
@@ -25,7 +25,7 @@ function addGameFilter(filter, gameName) {
   return filter;
 }
 
-function addTagFilter(filter, tagAndIntention) {
+export function addTagFilter(filter, tagAndIntention) {
   if (!("tags" in filter)) {
     filter.tags = { yes: [], no: [] };
   }
@@ -42,51 +42,37 @@ function addTagFilter(filter, tagAndIntention) {
   return filter;
 }
 
-function addPlayerNumFilter(filter, numPlayers) {
+export function addPlayerNumFilter(filter, numPlayers) {
   filter.numPlayers = numPlayers;
   return filter;
 }
 
-function addPlayerRange(numPlayer) {
+export function addPlayerRange(numPlayer) {
   currPlayerRange.push(numPlayer);
   return currPlayerRange.sort();
 }
 
-function setGame(game) {
+export function setGame(game) {
   currGame = game;
 }
 
-function setInteraction(interaction) {
+export function setInteraction(interaction) {
   //console.log(interaction);
   currInteraction = interaction;
 }
 
-function getCurrentGame() {
+export function getCurrentGame() {
   return currGame;
 }
 
-function getCurrInteraction() {
+export function getCurrInteraction() {
   return currInteraction;
 }
 
-function setClient(clientInst) {
+export function setClient(clientInst) {
   client = clientInst;
 }
 
-function getClient() {
+export function getClient() {
   return client;
-}
-
-module.exports = {
-  startMessageContext,
-  setGame,
-  setInteraction,
-  addPlayerNumFilter,
-  addGameFilter,
-  getCurrentGame,
-  getCurrInteraction,
-  addTagFilter,
-  addPlayerRange,
-  setClient,
-  getClient,
 }

@@ -1,5 +1,4 @@
 
-
-module.exports = {
+export const settings = {
   DEBUG_MODE: true
-}
+};

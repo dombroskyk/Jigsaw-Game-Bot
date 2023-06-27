@@ -1,5 +1,5 @@
-const { gameToString } = require("./textHelpers/textFormatting.js");
-const { MessageActionRow, MessageButton } = require("discord.js");
+import { gameToString } from "./textHelpers/textFormatting";
+import { MessageActionRow, MessageButton } from "discord.js";
 
 const YES_GAME_BUTTON_ID = "YesGame";
 const YES_GAME_LABEL = "Let's play!";
@@ -12,7 +12,7 @@ class DiscordStyles {
   static PRIMARY = Symbol("PRIMARY");
 }
 
-function formatGameSuggestion(game) {
+export function formatGameSuggestion(game) {
   const gameRow = new MessageActionRow()
     .addComponents([
       new MessageButton()
@@ -54,7 +54,7 @@ function formatGameSuggestion(game) {
   return { content: `How about '${gameToString(game)}'?`, components: [gameRow, ...tagRows] };
 }
 
-function generatePlayerButtons(selectedPlayerButtons = []) {
+export function generatePlayerButtons(selectedPlayerButtons = []) {
   let playerNumButtons = []
 
   for (let i = 1; i < 10; i++) {
@@ -82,7 +82,7 @@ function generatePlayerButtons(selectedPlayerButtons = []) {
   return playerNumRows;
 }
 
-function generateSkipAndEndButtons() {
+export function generateSkipAndEndButtons() {
   const skipButton = new MessageButton()
     .setCustomId("skipGame")
     .setLabel("Skip")
@@ -96,12 +96,12 @@ function generateSkipAndEndButtons() {
   return new MessageActionRow().addComponents([skipButton, endButton]);
 }
 
-function formatNumberOfPlayersMessage() {
+export function formatNumberOfPlayersMessage() {
   const text = "So you want to play a game...";
   return { content: text, components: generatePlayerButtons() };
 }
 
-function formatNewGameNumPlayersMessage(gameName, includeSkipEndButtons, selectedPlayerButtons = []) {
+export function formatNewGameNumPlayersMessage(gameName, includeSkipEndButtons, selectedPlayerButtons = []) {
   const text = `How many players can play ${gameName}? Click the buttons for the range of players that can play:`;
   let componentRows = generatePlayerButtons(selectedPlayerButtons);
   if (includeSkipEndButtons) {
@@ -109,10 +109,4 @@ function formatNewGameNumPlayersMessage(gameName, includeSkipEndButtons, selecte
   }
 
   return { content: text, components: componentRows };
-}
-
-module.exports = {
-  formatGameSuggestion,
-  formatNumberOfPlayersMessage,
-  formatNewGameNumPlayersMessage,
 }

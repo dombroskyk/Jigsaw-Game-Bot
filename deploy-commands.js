@@ -1,11 +1,9 @@
-const { addCommandsFromDir } = require('./commandRegistrationHelpers.js');
-const { DEBUG_MODE } = require('./settings.js');
-
-const fs = require('node:fs');
-const path = require('node:path');
+import { addCommandsFromDir } from './commandRegistrationHelpers.js';
+import { DEBUG_MODE } from './settings.js';
+import fs from 'node:fs';
+import path from 'node:path';
 //const { SlashCommandBuilder } = require('@discordjs/builders');
-const { REST } = require('@discordjs/rest');
-const { Routes } = require('discord-api-types/v9');
+import { REST, Routes } from '@discordjs/rest';
 
 const guildId = '778448107041718353';
 const applicationId = '971568069719777310';
@@ -17,7 +15,7 @@ if (DEBUG_MODE) {
   addCommandsFromDir('commands/debug', pushCommandCallback);
 }
 
-const rest = new REST({ version: '9' }).setToken(process.env['TOKEN']);
+const rest = new REST().setToken(process.env.CLIENT_TOKEN);
 
 rest.put(Routes.applicationGuildCommands(applicationId, guildId), { body: commands })
   .then(() => console.log('Successfully registered application commands.'))
