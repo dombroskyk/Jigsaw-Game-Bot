@@ -1,5 +1,5 @@
 import path from "node:path";
-import { getSteamUsers } from '../db/sqLiteDbLayer';
+// import { getSteamUsers } from '../db/sequelizeDbLayer';
 import { SlashCommandBuilder } from "discord.js";
 import { CommandDto } from "models/commandDto";
 
@@ -15,12 +15,12 @@ export default {
             .setRequired(true)),
   
 	async execute(interaction) {
-    const receivedUser = interaction.options.getUser(USER_ARG_KEY);
+        // const receivedUser = interaction.options.getUser(USER_ARG_KEY);
+        
+        // const steamUsers = await getSteamUsers();
+        // const filteredSteamUsers = steamUsers.filter(steamUser => steamUser.steamId !== receivedUser.id);
+        // // await writeSteamUsers(filteredSteamUsers);
     
-    const steamUsers = await getSteamUsers();
-    const filteredSteamUsers = steamUsers.filter(steamUser => steamUser.steamId !== receivedUser.id);
-    // await writeSteamUsers(filteredSteamUsers);
-  
-    interaction.reply(`Made sure ${receivedUser.username} is no longer registered`);
+        // interaction.reply(`Made sure ${receivedUser.username} is no longer registered`);
 	},
 };

@@ -1,5 +1,5 @@
 import path from "node:path";
-import { getSteamUsers, insertSteamUserMapping } from '../db/sqLiteDbLayer';
+// import { getSteamUsers, insertSteamUserMapping } from '../db/sequelizeDbLayer';
 import { SlashCommandBuilder } from "discord.js";
 import { CommandDto } from "models/commandDto";
 
@@ -23,12 +23,12 @@ export default {
     const receivedUser = interaction.options.getUser(USER_ARG_KEY);
     const receivedSteamId = interaction.options.getString(STEAM_ID_ARG_KEY);
     
-    const steamUsers = await getSteamUsers();
-    // const filteredSteamUsers = steamUsers.filter(steamUser => steamUser.discordId !== receivedUser.id);
+    // const steamUsers = await getSteamUsers();
+    // // const filteredSteamUsers = steamUsers.filter(steamUser => steamUser.discordId !== receivedUser.id);
 
-    // filteredSteamUsers.push();
-    await insertSteamUserMapping({ discordId: receivedUser.id, steamId: receivedSteamId });
+    // // filteredSteamUsers.push();
+    // await insertSteamUserMapping({ discordId: receivedUser.id, steamId: receivedSteamId });
   
-    interaction.reply(`Registered username ${receivedUser.username} with Steam ID ${receivedSteamId}`);
+    // interaction.reply(`Registered username ${receivedUser.username} with Steam ID ${receivedSteamId}`);
 	},
 };

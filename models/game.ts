@@ -1,46 +1,51 @@
-import { DataTypes, Model, Optional } from "sequelize";
-
-const GAMES_TABLE_NAME = "games";
-
-// interface IPlayerBounds {
-//     lowerBound: number;
-//     upperBound: number;
-// };
-
-interface GameAttributes {
-    id?: number;
-    name: string;
-    lowerPlayerBound: number;
-    upperPlayerBound: number;
-    // tags: string[];
-};
+import { Association, CreationOptional, DataTypes, HasManyAddAssociationMixin, HasManyCountAssociationsMixin, HasManyGetAssociationsMixin, HasManyHasAssociationMixin, HasManyHasAssociationsMixin, HasManyRemoveAssociationMixin, HasManyRemoveAssociationsMixin, HasManySetAssociationsMixin, InferAttributes, InferCreationAttributes, Model, NonAttribute, Optional } from "sequelize";
+import { Tag } from "./models";
 
 const GamesTableDefinition = {
     id: { 
         type: DataTypes.INTEGER,
-        unique: true,
+        autoIncrement: true,
         primaryKey: true
     },
-    name: DataTypes.STRING,
-    lowerPlayerBound: DataTypes.INTEGER,
+    name: {
+        type: DataTypes.STRING,
+        allowNull: false
+    },
+    lowerPlayerBound: {
+        type: DataTypes.INTEGER,
+        allowNull: false
+    },
     upperPlayerBound: DataTypes.INTEGER,
 
     createdAt: DataTypes.DATE,
     updatedAt: DataTypes.DATE,
 };
 
-interface GameCreationAttributes extends Optional<GameAttributes, 'id'> {}
-// interface GameOutput extends Required<GameAttributes> {}
+class Game extends Model<InferAttributes<Game, { omit: 'Tags' }>, InferCreationAttributes<Game, { omit: 'Tags' }>> {
+    declare id: CreationOptional<number>;
+    declare name: string;
+    declare lowerPlayerBound: number;
+    declare upperPlayerBound: number;
 
-interface IGame extends Model<GameAttributes, GameCreationAttributes>, GameAttributes {
-    createdAt?: Date;
-    updatedAt?: Date;
+    declare createdAt: CreationOptional<Date>;
+    declare updatedAt: CreationOptional<Date>;
+
+    declare Tags?: NonAttribute<Tag[]>;
+
+    declare getTags: HasManyGetAssociationsMixin<Tag>;
+    declare addTag: HasManyAddAssociationMixin<Tag, number>;
+    declare addTags: HasManyAddAssociationMixin<Tag, number>;
+    declare removeTag: HasManyRemoveAssociationMixin<Tag, number>;
+    declare removeTags: HasManyRemoveAssociationsMixin<Tag, number>;
+    declare hasTag: HasManyHasAssociationMixin<Tag, number>;
+    declare hasTags: HasManyHasAssociationsMixin<Tag, number>;
+    declare setTags: HasManySetAssociationsMixin<Tag, number>;
+    declare countTags: HasManyCountAssociationsMixin;
+
+    declare public static associations: { tags: Association<Game, Tag>; };
 }
 
 export {
-    IGame,
-    GamesTableDefinition,
-    GameCreationAttributes,
-    GameAttributes,
-    GAMES_TABLE_NAME
+    Game,
+    GamesTableDefinition
 }

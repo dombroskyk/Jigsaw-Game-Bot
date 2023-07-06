@@ -1,11 +1,11 @@
-import { getGames } from "../db/sqLiteDbLayer";
+import { getGames } from "../db/sequelizeDbLayer";
 import { gameToString } from "../textHelpers/textFormatting";
 import path from "node:path";
 import { addPlayerNumFilter, addGameFilter, addTagFilter } from "../messageContextHelper";
 import { handleCollectorError } from "../errorHandling/replyTimeout";
 import { formatGameSuggestion } from "../messageFormatter";
 import { getTagAndIntentionFromId } from "../textHelpers/textParsing";
-import { IGame } from "models/models";
+import { Game } from "models/models";
 import { CommandDto } from "models/commandDto";
 import { SlashCommandBuilder } from "discord.js";
 
@@ -51,7 +51,7 @@ export default {
     currInteraction = await respondToMessage(currInteraction, "So you want to play a game...")
 
     let filter = addPlayerNumFilter({}, numPlayers);
-    let games:IGame[] = await getGames(filter);
+    let games:Game[] = await getGames(filter);
     while (games.length > 0) {
 
       if (!games.length) {

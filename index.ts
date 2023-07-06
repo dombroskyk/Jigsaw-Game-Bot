@@ -1,16 +1,12 @@
 import * as dotenv from 'dotenv';
 // import 'source-map-support/register';
-import { Client, GatewayIntentBits, Events, Collection, CommandInteraction } from "discord.js";
-import { getGames, getTags, writeGames, writeTags } from "./db/sqLiteDbLayer";
+import { Client, GatewayIntentBits, Events, Collection, CommandInteraction, CacheType } from "discord.js";
 import { getRawCommandArguments, getPlayerNumBounds, getTagsFromMessage } from "./textHelpers/textParsing";
 import { gameToString } from "./textHelpers/textFormatting";
-import { handleAddTag } from "./handlers/addTagHandler";
-import { handleListGames } from "./handlers/listGamesHandler";
-import { handleHelp } from "./handlers/helpHandler";
 import { setInteraction, startMessageContext, setClient } from "./messageContextHelper";
 import { addCommandsFromDir } from './commandRegistrationHelpers';
 import { settings } from './settings';
-import { Game, closeDb } from './db/sequelizeDbLayer';
+import { closeDb } from './db/sequelizeDbLayer';
 import { CommandDto } from 'models/commandDto';
 
 dotenv.config();
@@ -41,7 +37,6 @@ client.once(Events.ClientReady, () => {
   if (settings.DEBUG_MODE) {
     console.log("DEBUG_MODE is ON!");
   }
-  Game.sync();
 });
 
 client.on(Events.Error, error => {
@@ -57,18 +52,16 @@ client.on(Events.MessageCreate, async msg => {
 
   const messageText = msg.content;
   const messageTextLower = messageText.toLowerCase();
-  if (messageTextLower.includes("list games")) {
-    await handleListGames(msg);
-  }
-  else {
-    handleHelp(msg);
-  }
+  // if (messageTextLower.includes("list games")) {
+  //   await handleListGames(msg);
+  // }
+  // else {
+  //   handleHelp(msg);
+  // }
 });
 
-client.on(Events.InteractionCreate, async interaction => {
+client.on(Events.InteractionCreate, async (interaction) => {
   setInteraction(interaction);
-  
-  console.log(interaction);
 
   if (interaction.isCommand()) {
     const command = commands.get(interaction.commandName);

@@ -1,4 +1,5 @@
-import { IGame, GameCreationAttributes, GamesTableDefinition, GAMES_TABLE_NAME } from "./game";
+import { Game, GamesTableDefinition } from "./game";
+import { Tag, TagsTableDefinition } from "./tag"
 
 export interface SteamGame {
     id: number;
@@ -12,9 +13,5 @@ export interface SteamUser {
     steamId: string;
 };
 
-export interface Tag {
-    id?: number;
-    name: string;
-};
-
-export { IGame, GamesTableDefinition, GAMES_TABLE_NAME, GameCreationAttributes };
+export { Game, GamesTableDefinition };
+export { Tag, TagsTableDefinition };

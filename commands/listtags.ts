@@ -1,5 +1,5 @@
 import path from "node:path";
-import { getTags } from "../db/sqLiteDbLayer";
+import { getTags } from "../db/sequelizeDbLayer";
 import { SlashCommandBuilder } from "discord.js";
 
 const GAME_NAME_ARG_KEY = "game_name";
@@ -12,6 +12,8 @@ export default {
 
   async execute(interaction) {
     const tags = await getTags();
-    interaction.reply(tags.join(", "));
+    if (!tags.length)
+      interaction.reply("No tags... yet");
+    interaction.reply(tags.map(tag => tag.name).join(", "));
   }
 };

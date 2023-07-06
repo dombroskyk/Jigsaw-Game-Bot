@@ -1,5 +1,5 @@
 import path from "node:path";
-import { getSteamUsers } from '../db/sqLiteDbLayer';
+// import { getSteamUsers } from '../db/sequelizeDbLayer';
 import { registeredSteamUserToString } from "../textHelpers/textFormatting";
 import { SlashCommandBuilder } from "discord.js";
 
@@ -10,14 +10,14 @@ export default {
 
 
   async execute(interaction) {
-    const registeredSteamUsers = await getSteamUsers();
-    if (registeredSteamUsers) {
-      let registeredSteamUsersFormattedStrings = await Promise.all(registeredSteamUsers.map(async registeredSteamUser => { return await registeredSteamUserToString(registeredSteamUser) }));
-      let registeredSteamUsersString = registeredSteamUsersFormattedStrings.join("\n");
-      if (!registeredSteamUsersString)
-        registeredSteamUsersString = "No registered Steam users... yet";
+    // const registeredSteamUsers = await getSteamUsers();
+    // if (registeredSteamUsers) {
+    //   let registeredSteamUsersFormattedStrings = await Promise.all(registeredSteamUsers.map(async registeredSteamUser => { return await registeredSteamUserToString(registeredSteamUser) }));
+    //   let registeredSteamUsersString = registeredSteamUsersFormattedStrings.join("\n");
+    //   if (!registeredSteamUsersString)
+    //     registeredSteamUsersString = "No registered Steam users... yet";
 
-      interaction.reply(registeredSteamUsersString);
-    }
+    //   interaction.reply(registeredSteamUsersString);
+    // }
   }
 };

@@ -1,6 +1,6 @@
 import path from "node:path";
 import { gameToString } from "../textHelpers/textFormatting";
-import { getGames } from "../db/sqLiteDbLayer";
+import { getGames } from "../db/sequelizeDbLayer";
 import { SlashCommandBuilder } from "discord.js";
 
 const MAX_DISCORD_MESSAGE_LENGTH = 2000;
@@ -13,7 +13,7 @@ export default {
 
   async execute(interaction) {
     const games = await getGames();
-    if (!games) {
+    if (!games.length) {
       await interaction.reply("No games stored... yet");
       return;
     }
@@ -32,6 +32,9 @@ export default {
       buffer += gameString + "\n";
     }
     
+    console.log("buffer");
+    console.log(buffer);
+
     await interaction.followUp(buffer);
   }
 };

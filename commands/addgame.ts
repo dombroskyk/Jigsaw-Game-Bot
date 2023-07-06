@@ -1,9 +1,10 @@
 import { gameToString } from "../textHelpers/textFormatting";
 import path from "node:path";
-import { GameCreationAttributes, IGame } from "../models/models";
-import { getGames, insertGame } from "../db/sequelizeDbLayer";
+import { Game, Tag } from "../models/models";
+import { dumpDb, findOrCreateTags, getGames, insertGame } from "../db/sequelizeDbLayer";
 import { CommandDto } from "models/commandDto.js";
-import { SlashCommandBuilder } from "discord.js";
+import { Interaction, SlashCommandBuilder } from "discord.js";
+import { CreationAttributes, InferCreationAttributes } from "sequelize";
 
 const GAME_NAME_ARG_KEY = "game_name";
 const LOWER_PLAYER_BOUND_ARG_KEY = "lower_player_bound"
@@ -81,32 +82,35 @@ export default {
         lowerPlayerBound = newLowerPlayerBound;
       }
 
-      // let tags: string[] = [];
-      // for (let i = 1; i <= 10; i++) {
-      //   const tag = interaction.options.getString(`${TAG_ARG_KEY}${i}`);
-      //   if (tag && !tags.some(existingTag => existingTag.toLowerCase() === tag.toLowerCase())) {
-      //     tags.push(tag);
-      //   }
-      // }
+      let tags:Tag[] = [];
+      for (let i = 1; i <= 10; i++) {
+        const tagName = interaction.options.getString(`${TAG_ARG_KEY}${i}`);
+        if (tagName && !tags.some(existingTag => existingTag.name.toLowerCase() === tagName.toLowerCase())) {
+          const tag = Tag.build({ name: tagName })
+          tags.push(tag);
+        }
+      }
 
-      const gameCreationVals:GameCreationAttributes = {
+      tags = await findOrCreateTags(tags);
+
+      const gameCreationVals:Game = Game.build({
         name: gameName,
         lowerPlayerBound: lowerPlayerBound,
-        upperPlayerBound: upperPlayerBound,
-        // tags: tags
-      };
+        upperPlayerBound: upperPlayerBound
+      });
 
-      let game:IGame;
+      let game:Game;
       const games = await getGames();
       if (!games.some(game => game.name.toLowerCase() === gameName.toLowerCase())) {
         try {
-          game = await insertGame(gameCreationVals);
+          game = await insertGame(gameCreationVals, tags);
         } catch (error) {
+          console.log(error);
           if (error.name === "SequelizeUniqueConstraintError") {
-            return interaction.reply(`Game ${gameName} already exists.`);
+            return interaction.editReply(`Game ${gameName} already exists.`);
           }
 
-          return interaction.reply(`Something went wrong with adding game ${gameName}.`);
+          return interaction.editReply(`Something went wrong with adding game ${gameName}.`);
         }
       } else {
         interaction.editReply(`${gameName} already exists, delete the existing entry before adding a new instance of it`);
