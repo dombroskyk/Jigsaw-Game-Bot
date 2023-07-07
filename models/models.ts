@@ -1,5 +1,6 @@
 import { Game, GamesTableDefinition } from "./game";
 import { Tag, TagsTableDefinition } from "./tag"
+import { SteamUser, SteamUsersTableDefinition } from "./steamUser";
 
 export interface SteamGame {
     id: number;
@@ -7,11 +8,6 @@ export interface SteamGame {
     appId: number;
 };
 
-export interface SteamUser {
-    id?: number;
-    discordId: string;
-    steamId: string;
-};
-
+export { SteamUser, SteamUsersTableDefinition };
 export { Game, GamesTableDefinition };
 export { Tag, TagsTableDefinition };

@@ -1,6 +1,6 @@
 import { CreationAttributes, InferCreationAttributes, Sequelize } from "sequelize";
 import * as dotenv from 'dotenv';
-import { Game, GamesTableDefinition, Tag, TagsTableDefinition } from "../models/models";
+import { Game, GamesTableDefinition, SteamUser, SteamUsersTableDefinition, Tag, TagsTableDefinition } from "../models/models";
 import { isTaggedTemplateExpression } from "typescript";
 dotenv.config();
 
@@ -14,6 +14,7 @@ const sequelize = new Sequelize('Jigsaw', process.env.SEQUELIZE_DB_USER!, proces
 
 Game.init(GamesTableDefinition, { sequelize });
 Tag.init(TagsTableDefinition, { sequelize });
+SteamUser.init(SteamUsersTableDefinition, { sequelize });
 
 Tag.belongsToMany(Game, { through: 'Games_Tags' });
 Game.belongsToMany(Tag, { through: 'Games_Tags' });
@@ -74,6 +75,14 @@ export async function findOrCreateTags(tags:Tag[]): Promise<Tag[]> {
 	return actualTags;
 }
 
+export async function getSteamUsers(): Promise<SteamUser[]> {
+	return await SteamUser.findAll();
+}
+
+export async function insertSteamUserMapping(discordId:string, steamId:number): Promise<SteamUser> {
+	return await SteamUser.create({ discordId: discordId, steamId: steamId});
+}
+
 export async function dumpDb(): Promise<void> {
 	console.log('games');
 	await sequelize.query("select * from games").then((rows) => {
@@ -85,6 +94,10 @@ export async function dumpDb(): Promise<void> {
 	});
 	console.log('games_tags');
 	await sequelize.query("select * from Games_Tags").then((rows) => {
+		console.log(JSON.stringify(rows));
+	});
+	console.log('steamUsers');
+	await sequelize.query("select * from steamUsers").then((rows) => {
 		console.log(JSON.stringify(rows));
 	});
 }
