@@ -11,11 +11,11 @@ export default {
 
   async execute(interaction) {
     const registeredSteamUsers = await getSteamUsers();
-    if (registeredSteamUsers) {
+    if (!registeredSteamUsers.length) {
+      interaction.reply("No registered Steam users... yet");
+    } else {
       let registeredSteamUsersFormattedStrings = await Promise.all(registeredSteamUsers.map(async registeredSteamUser => { return await registeredSteamUserToString(registeredSteamUser) }));
       let registeredSteamUsersString = registeredSteamUsersFormattedStrings.join("\n");
-      if (!registeredSteamUsersString)
-        registeredSteamUsersString = "No registered Steam users... yet";
 
       interaction.reply(registeredSteamUsersString);
     }

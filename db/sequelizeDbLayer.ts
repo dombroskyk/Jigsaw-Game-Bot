@@ -19,7 +19,7 @@ SteamUser.init(SteamUsersTableDefinition, { sequelize });
 Tag.belongsToMany(Game, { through: 'Games_Tags' });
 Game.belongsToMany(Tag, { through: 'Games_Tags' });
 
-sequelize.sync({force: true});
+sequelize.sync({alter: true});
 
 export async function insertGame(gameVals:Game, tags:Tag[]): Promise<Game> {
 	const game = await gameVals.save();
@@ -81,6 +81,15 @@ export async function getSteamUsers(): Promise<SteamUser[]> {
 
 export async function insertSteamUserMapping(discordId:string, steamId:number): Promise<SteamUser> {
 	return await SteamUser.create({ discordId: discordId, steamId: steamId});
+}
+
+export async function deleteSteamUserRegistrationByDiscordId(discordId:string): Promise<void> {
+	const steamUserToDelete = await SteamUser.findOne({ where: { discordId: discordId }});
+	if (steamUserToDelete === null) {
+		throw new Error(`SteamUser with id: ${discordId} was not found!`);
+	}
+	
+	steamUserToDelete.destroy();
 }
 
 export async function dumpDb(): Promise<void> {
