@@ -5,7 +5,7 @@ import { SlashCommandBuilder } from "discord.js";
 
 export default {
   data: new SlashCommandBuilder()
-    .setName(path.basename(__filename, ".ts"))
+    .setName(path.basename(__filename, ".ts").toLocaleLowerCase())
     .setDescription("DEBUG - List Steam game ids from the list of imported games"),
 
   async execute(interaction) {

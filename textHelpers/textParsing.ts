@@ -27,6 +27,7 @@ export function getPlayerNumBounds(message) {
 }
 
 export function getTagsFromMessage(message) {
+  console.log(message);
   const messageContent = message.content.trim();
   const tagSplits = messageContent.split(",");
   const trimmedTags = tagSplits.map(tag => { return tag.trim() });

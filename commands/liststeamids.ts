@@ -1,5 +1,5 @@
 import path from "node:path";
-import { getSteamUsers } from '../db/sequelizeDbLayer';
+import { getSteamUserPlatformMappings } from '../db/sequelizeDbLayer';
 import { registeredSteamUserToString } from "../textHelpers/textFormatting";
 import { SlashCommandBuilder } from "discord.js";
 
@@ -10,7 +10,7 @@ export default {
 
 
   async execute(interaction) {
-    const registeredSteamUsers = await getSteamUsers();
+    const registeredSteamUsers = await getSteamUserPlatformMappings();
     if (!registeredSteamUsers.length) {
       interaction.reply("No registered Steam users... yet");
     } else {

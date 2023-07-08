@@ -1,6 +1,6 @@
-import { CreationAttributes, InferCreationAttributes, Sequelize } from "sequelize";
+import { CreationAttributes, InferCreationAttributes, Op, Sequelize } from "sequelize";
 import * as dotenv from 'dotenv';
-import { Game, GamesTableDefinition, SteamUser, SteamUsersTableDefinition, Tag, TagsTableDefinition } from "../models/models";
+import { Game, GamesTableDefinition, UserPlatformMapping, UserPlatformMappingsTableDefinition, Tag, TagsTableDefinition } from "../models/models";
 import { isTaggedTemplateExpression } from "typescript";
 dotenv.config();
 
@@ -14,16 +14,18 @@ const sequelize = new Sequelize('Jigsaw', process.env.SEQUELIZE_DB_USER!, proces
 
 Game.init(GamesTableDefinition, { sequelize });
 Tag.init(TagsTableDefinition, { sequelize });
-SteamUser.init(SteamUsersTableDefinition, { sequelize });
+UserPlatformMapping.init(UserPlatformMappingsTableDefinition, { sequelize });
 
 Tag.belongsToMany(Game, { through: 'Games_Tags' });
 Game.belongsToMany(Tag, { through: 'Games_Tags' });
+
+Game.belongsToMany(UserPlatformMapping, { through: 'Game_SteamUserPlatformMapping', as: 'SteamOwner'});
+UserPlatformMapping.belongsToMany(Game, { through: 'Game_SteamUserPlatformMapping', as: 'SteamGames'});
 
 sequelize.sync({alter: true});
 
 export async function insertGame(gameVals:Game, tags:Tag[]): Promise<Game> {
 	const game = await gameVals.save();
-
 	await game.setTags(tags);
 	
 	return await getGameById(game.id);
@@ -64,32 +66,60 @@ export async function getTags(): Promise<Tag[]> {
 
 export async function findOrCreateTags(tags:Tag[]): Promise<Tag[]> {
 	let actualTags:Tag[] = [];
-	tags.forEach(async tag => {
-		let actualTag = await Tag.findOne({ where: { name: tag.name }})
+	for(const tag of tags) {
+		let actualTag = await Tag.findOne({ where: { name: tag.name }});
 		if (actualTag === null)
 			actualTag = await tag.save();
 
 		actualTags.push(actualTag);
-	});
+	};
 
 	return actualTags;
 }
 
-export async function getSteamUsers(): Promise<SteamUser[]> {
-	return await SteamUser.findAll();
+export async function getSteamUserPlatformMappings(): Promise<UserPlatformMapping[]> {
+	return await UserPlatformMapping.findAll({ 
+		where: { 
+			steamId: { [Op.not]: null }
+		}
+	});
 }
 
-export async function insertSteamUserMapping(discordId:string, steamId:number): Promise<SteamUser> {
-	return await SteamUser.create({ discordId: discordId, steamId: steamId});
-}
-
-export async function deleteSteamUserRegistrationByDiscordId(discordId:string): Promise<void> {
-	const steamUserToDelete = await SteamUser.findOne({ where: { discordId: discordId }});
-	if (steamUserToDelete === null) {
-		throw new Error(`SteamUser with id: ${discordId} was not found!`);
+export async function getSteamUserPlatformMappingByDiscordId(discordId:string): Promise<UserPlatformMapping> {
+	const steamUserPlatformMapping = await UserPlatformMapping.findOne({ 
+		where: { 
+			[Op.and]: {
+				id: discordId,
+				steamId: {[Op.not]: null}
+			}
+		}
+	});
+	if (steamUserPlatformMapping === null) {
+		throw new Error(`Steam UserPlatformMapping with for Discord Id: '${discordId}' was not found!`);
 	}
 	
-	steamUserToDelete.destroy();
+	return steamUserPlatformMapping;
+}
+
+export async function insertSteamUserPlatformMapping(discordId:string, steamId:number): Promise<UserPlatformMapping> {
+	return await UserPlatformMapping.create({ id: discordId, steamId: steamId});
+}
+
+export async function deleteSteamUserPlatformMappingByDiscordId(discordId:string): Promise<void> {
+	const steamUserPlatformMappingToDelete = await getSteamUserPlatformMappingByDiscordId(discordId);
+	
+	steamUserPlatformMappingToDelete.destroy();
+}
+
+export async function getImportedSteamGames(): Promise<Game[]> {
+	return await Game.findAll({where: {steamId: { [Op.not]: null}}})
+}
+
+export async function mapGameToSteamUser(steamGame:Game, userPlatformMapping:UserPlatformMapping): Promise<void> {
+	if (!await steamGame.hasSteamOwner(userPlatformMapping)) {
+		steamGame.addSteamOwner(userPlatformMapping);
+		steamGame.save();
+	}
 }
 
 export async function dumpDb(): Promise<void> {
@@ -105,8 +135,12 @@ export async function dumpDb(): Promise<void> {
 	await sequelize.query("select * from Games_Tags").then((rows) => {
 		console.log(JSON.stringify(rows));
 	});
-	console.log('steamUsers');
-	await sequelize.query("select * from steamUsers").then((rows) => {
+	console.log('userPlatformMappings');
+	await sequelize.query("select * from userPlatformMappings").then((rows) => {
+		console.log(JSON.stringify(rows));
+	});
+	console.log('Game_SteamUserPlatformMapping');
+	await sequelize.query("select * from Game_SteamUserPlatformMapping").then((rows) => {
 		console.log(JSON.stringify(rows));
 	});
 }

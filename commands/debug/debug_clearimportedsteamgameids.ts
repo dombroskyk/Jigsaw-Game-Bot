@@ -7,7 +7,7 @@ const STEAM_GAME_ID_ARG_KEY = "steamgameid";
 
 export default {
   data: new SlashCommandBuilder()
-    .setName(path.basename(__filename, ".ts"))
+    .setName(path.basename(__filename, ".ts").toLocaleLowerCase())
     .setDescription("ADMIN - Unmark one or more Steam game ids from the list of imported games")
     .addStringOption(option =>
       option.setName(STEAM_GAME_ID_ARG_KEY)

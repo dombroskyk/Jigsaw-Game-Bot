@@ -9,6 +9,7 @@ import { settings } from './settings';
 import { closeDb } from './db/sequelizeDbLayer';
 import { CommandDto } from 'models/commandDto';
 
+//todo: is there someway to DI this or pass it around?
 dotenv.config();
 
 //todo: democracy mode
@@ -22,7 +23,7 @@ dotenv.config();
 // ephemeral responses
 // mac support flag
 const client = new Client({ intents: [GatewayIntentBits.GuildMembers, GatewayIntentBits.GuildMessageReactions, GatewayIntentBits.GuildMessages,
-                                      GatewayIntentBits.GuildScheduledEvents, GatewayIntentBits.Guilds] });
+                                      GatewayIntentBits.GuildScheduledEvents, GatewayIntentBits.Guilds, GatewayIntentBits.MessageContent] });
 
 const setCommandsCallback = (command:CommandDto) => {
   commands.set(command.data.name, command);
@@ -52,12 +53,7 @@ client.on(Events.MessageCreate, async msg => {
 
   const messageText = msg.content;
   const messageTextLower = messageText.toLowerCase();
-  // if (messageTextLower.includes("list games")) {
-  //   await handleListGames(msg);
-  // }
-  // else {
   //   handleHelp(msg);
-  // }
 });
 
 client.on(Events.InteractionCreate, async (interaction) => {

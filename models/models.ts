@@ -1,6 +1,6 @@
 import { Game, GamesTableDefinition } from "./game";
 import { Tag, TagsTableDefinition } from "./tag"
-import { SteamUser, SteamUsersTableDefinition } from "./steamUser";
+import { UserPlatformMapping, UserPlatformMappingsTableDefinition } from "./userPlatformMapping";
 
 export interface SteamGame {
     id: number;
@@ -8,6 +8,6 @@ export interface SteamGame {
     appId: number;
 };
 
-export { SteamUser, SteamUsersTableDefinition };
+export { UserPlatformMapping, UserPlatformMappingsTableDefinition };
 export { Game, GamesTableDefinition };
 export { Tag, TagsTableDefinition };

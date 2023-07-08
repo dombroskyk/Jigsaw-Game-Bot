@@ -1,6 +1,6 @@
 import path from "node:path";
 import { SlashCommandBuilder } from "discord.js";
-import { insertSteamUserMapping } from "../db/sequelizeDbLayer";
+import { insertSteamUserPlatformMapping } from "../db/sequelizeDbLayer";
 
 const USER_ARG_KEY = "user"
 const STEAM_ID_ARG_KEY = "steamid"
@@ -22,8 +22,8 @@ export default {
     const receivedUser = interaction.options.getUser(USER_ARG_KEY);
     const receivedSteamId = interaction.options.getString(STEAM_ID_ARG_KEY);
 
-    await insertSteamUserMapping(receivedUser.id, receivedSteamId);
+    await insertSteamUserPlatformMapping(receivedUser.id, receivedSteamId);
   
-    interaction.reply(`Registered username ${receivedUser.username} with Steam ID ${receivedSteamId}`);
+    interaction.reply(`Registered username '${receivedUser.username}' with Steam ID '${receivedSteamId}'`);
 	},
 };

@@ -1,28 +1,22 @@
 import { gameToString } from "./textHelpers/textFormatting";
-import { MessageActionRow, MessageButton } from "discord.js";
+import { ActionRowBuilder, ButtonComponent, ButtonStyle, ButtonBuilder } from "discord.js";
 
 const YES_GAME_BUTTON_ID = "YesGame";
 const YES_GAME_LABEL = "Let's play!";
 const NO_GAME_BUTTON_ID = "NoGame";
 const NO_GAME_LABEL = "Not this game";
 
-class DiscordStyles {
-  static DANGER = Symbol("DANGER");
-  static SUCCESS = Symbol("SUCCESS");
-  static PRIMARY = Symbol("PRIMARY");
-}
-
 export function formatGameSuggestion(game) {
-  const gameRow = new MessageActionRow()
+  const gameRow = new ActionRowBuilder()
     .addComponents([
-      new MessageButton()
+      new ButtonBuilder()
         .setCustomId(YES_GAME_BUTTON_ID)
         .setLabel(YES_GAME_LABEL)
-        .setStyle(DiscordStyles.SUCCESS.description),
-      new MessageButton()
+        .setStyle(ButtonStyle.Success),
+      new ButtonBuilder()
         .setCustomId(NO_GAME_BUTTON_ID)
         .setLabel(NO_GAME_LABEL)
-        .setStyle(DiscordStyles.DANGER.description)
+        .setStyle(ButtonStyle.Danger)
     ]);
 
   let yesTagComponents = [];
@@ -30,25 +24,25 @@ export function formatGameSuggestion(game) {
   for (let i = 0; i < game.tags.length; i++) {
     const tag = game.tags[i];
     yesTagComponents.push(
-      new MessageButton()
+      new ButtonBuilder()
         .setCustomId(`${tag}_yes`)
         .setLabel(`Filter For ${tag}`)
-        .setStyle(DiscordStyles.PRIMARY.description),
+        .setStyle(ButtonStyle.Primary),
     );
     noTagComponents.push(
-      new MessageButton()
+      new ButtonBuilder()
         .setCustomId(`${tag}_no`)
         .setLabel(`Filter Out ${tag}`)
-        .setStyle(DiscordStyles.DANGER.description),
+        .setStyle(ButtonStyle.Danger),
     );
   }
 
   let tagRows = [];
-  tagRows.push(new MessageActionRow().addComponents(yesTagComponents.slice(0, 5)));
-  tagRows.push(new MessageActionRow().addComponents(noTagComponents.slice(0, 5)));
+  tagRows.push(new ActionRowBuilder().addComponents(yesTagComponents.slice(0, 5)));
+  tagRows.push(new ActionRowBuilder().addComponents(noTagComponents.slice(0, 5)));
   if (yesTagComponents.length > 5) {
-    tagRows.push(new MessageActionRow().addComponents(yesTagComponents.slice(5)));
-    tagRows.push(new MessageActionRow().addComponents(noTagComponents.slice(5)));
+    tagRows.push(new ActionRowBuilder().addComponents(yesTagComponents.slice(5)));
+    tagRows.push(new ActionRowBuilder().addComponents(noTagComponents.slice(5)));
   }
 
   return { content: `How about '${gameToString(game)}'?`, components: [gameRow, ...tagRows] };
@@ -58,10 +52,10 @@ export function generatePlayerButtons(selectedPlayerButtons = []) {
   let playerNumButtons = []
 
   for (let i = 1; i < 10; i++) {
-    const style = selectedPlayerButtons.includes((i).toString()) ? DiscordStyles.SUCCESS.description : DiscordStyles.PRIMARY.description;
+    const style = selectedPlayerButtons.includes((i).toString()) ? ButtonStyle.Success : ButtonStyle.Primary;
 
     playerNumButtons.push(
-      new MessageButton()
+      new ButtonBuilder()
         .setCustomId(`${i}_numPlayer`)
         .setLabel(`${i}`)
         .setStyle(style),
@@ -69,31 +63,31 @@ export function generatePlayerButtons(selectedPlayerButtons = []) {
   }
 
   playerNumButtons.push(
-    new MessageButton()
+    new ButtonBuilder()
       .setCustomId(`10_numPlayer`)
       .setLabel(`10+`)
-      .setStyle(selectedPlayerButtons.includes('10') ? DiscordStyles.SUCCESS.description : DiscordStyles.PRIMARY.description),
+      .setStyle(selectedPlayerButtons.includes('10') ? ButtonStyle.Success : ButtonStyle.Primary),
   );
 
   let playerNumRows = [];
-  playerNumRows.push(new MessageActionRow().addComponents(playerNumButtons.slice(0, 5)));
-  playerNumRows.push(new MessageActionRow().addComponents(playerNumButtons.slice(5)));
+  playerNumRows.push(new ActionRowBuilder().addComponents(playerNumButtons.slice(0, 5)));
+  playerNumRows.push(new ActionRowBuilder().addComponents(playerNumButtons.slice(5)));
 
   return playerNumRows;
 }
 
 export function generateSkipAndEndButtons() {
-  const skipButton = new MessageButton()
+  const skipButton = new ButtonBuilder()
     .setCustomId("skipGame")
     .setLabel("Skip")
-    .setStyle(DiscordStyles.DANGER.description);
+    .setStyle(ButtonStyle.Danger);
 
-  const endButton = new MessageButton()
+  const endButton = new ButtonBuilder()
     .setCustomId("end")
     .setLabel("End Session")
-    .setStyle(DiscordStyles.DANGER.description);
+    .setStyle(ButtonStyle.Danger);
 
-  return new MessageActionRow().addComponents([skipButton, endButton]);
+  return new ActionRowBuilder().addComponents([skipButton, endButton]);
 }
 
 export function formatNumberOfPlayersMessage() {

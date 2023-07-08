@@ -1,5 +1,5 @@
 import path from "node:path";
-import { deleteSteamUserRegistrationByDiscordId } from '../db/sequelizeDbLayer';
+import { deleteSteamUserPlatformMappingByDiscordId } from '../db/sequelizeDbLayer';
 import { SlashCommandBuilder } from "discord.js";
 
 const USER_ARG_KEY = "user"
@@ -16,8 +16,8 @@ export default {
     async execute(interaction) {
         const receivedUser = interaction.options.getUser(USER_ARG_KEY);
         
-        await deleteSteamUserRegistrationByDiscordId(receivedUser.id);
+        await deleteSteamUserPlatformMappingByDiscordId(receivedUser.id);
     
-        interaction.reply(`Made sure ${receivedUser.username} is no longer registered`);
+        interaction.reply(`'${receivedUser.username}' is no longer registered`);
     },
 };

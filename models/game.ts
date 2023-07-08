@@ -1,5 +1,5 @@
 import { Association, CreationOptional, DataTypes, HasManyAddAssociationMixin, HasManyCountAssociationsMixin, HasManyGetAssociationsMixin, HasManyHasAssociationMixin, HasManyHasAssociationsMixin, HasManyRemoveAssociationMixin, HasManyRemoveAssociationsMixin, HasManySetAssociationsMixin, InferAttributes, InferCreationAttributes, Model, NonAttribute, Optional } from "sequelize";
-import { Tag } from "./models";
+import { UserPlatformMapping, Tag } from "./models";
 
 const GamesTableDefinition = {
     id: { 
@@ -12,25 +12,28 @@ const GamesTableDefinition = {
         allowNull: false
     },
     lowerPlayerBound: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.INTEGER.UNSIGNED,
         allowNull: false
     },
-    upperPlayerBound: DataTypes.INTEGER,
+    upperPlayerBound: DataTypes.INTEGER.UNSIGNED,
+    steamId: DataTypes.INTEGER.UNSIGNED,
 
     createdAt: DataTypes.DATE,
     updatedAt: DataTypes.DATE,
 };
 
-class Game extends Model<InferAttributes<Game, { omit: 'Tags' }>, InferCreationAttributes<Game, { omit: 'Tags' }>> {
+class Game extends Model<InferAttributes<Game, { omit: 'Tags' | 'SteamOwners' }>, InferCreationAttributes<Game, { omit: 'Tags' | 'SteamOwners' }>> {
     declare id: CreationOptional<number>;
     declare name: string;
     declare lowerPlayerBound: number;
-    declare upperPlayerBound: number;
+    declare upperPlayerBound?: number | null;
+    declare steamId?: number | null;
 
     declare createdAt: CreationOptional<Date>;
     declare updatedAt: CreationOptional<Date>;
 
     declare Tags?: NonAttribute<Tag[]>;
+    declare SteamOwners?: NonAttribute<UserPlatformMapping[]>;
 
     declare getTags: HasManyGetAssociationsMixin<Tag>;
     declare addTag: HasManyAddAssociationMixin<Tag, number>;
@@ -42,7 +45,13 @@ class Game extends Model<InferAttributes<Game, { omit: 'Tags' }>, InferCreationA
     declare setTags: HasManySetAssociationsMixin<Tag, number>;
     declare countTags: HasManyCountAssociationsMixin;
 
-    declare public static associations: { tags: Association<Game, Tag>; };
+    declare hasSteamOwner: HasManyHasAssociationMixin<UserPlatformMapping, number>;
+    declare addSteamOwner: HasManyAddAssociationMixin<UserPlatformMapping, number>;
+
+    declare public static associations: {
+        tags: Association<Game, Tag>;
+        steamOwners: Association<Game, UserPlatformMapping>;
+    };
 }
 
 export {
