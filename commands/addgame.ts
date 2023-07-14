@@ -1,4 +1,3 @@
-import { gameToString } from "../textHelpers/textFormatting";
 import path from "node:path";
 import { Game, Tag } from "../models/models";
 import { dumpDb, findOrCreateTags, getGames, insertGame } from "../db/sequelizeDbLayer";
@@ -117,7 +116,7 @@ export default {
         return;
       }
 
-      interaction.editReply(`Successfully saved ${gameToString(game)}`);
+      interaction.editReply(`Successfully saved ${game.toString()}`);
     } catch (exception) {
       console.log(exception);
       interaction.editReply(`Failed to add game due to encountered error: ${exception}`);

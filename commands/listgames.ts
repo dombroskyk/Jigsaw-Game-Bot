@@ -1,5 +1,4 @@
 import path from "node:path";
-import { gameToString } from "../textHelpers/textFormatting";
 import { getGames } from "../db/sequelizeDbLayer";
 import { SlashCommandBuilder } from "discord.js";
 
@@ -22,7 +21,7 @@ export default {
 
     let buffer = "";
     for (const game of games) {
-      const gameString = gameToString(game);
+      const gameString = game.toString();
       if (gameString.length + buffer.length + 2 >= MAX_DISCORD_MESSAGE_LENGTH) {
         await interaction.followUp(buffer);
         buffer = "";

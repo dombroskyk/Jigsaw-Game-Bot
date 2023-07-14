@@ -3,7 +3,6 @@ import axios from 'axios';
 import { findOrCreateTags, getGames, getImportedSteamGames, getSteamUserPlatformMappingByDiscordId, mapGameToSteamUser } from "../db/sequelizeDbLayer"; // getImportedSteamGameIds, writeImportedSteamGameIds,
 import { formatNewGameNumPlayersMessage } from "../messageFormatter";
 import { getTagsFromMessage, getNumPlayersFromId } from "../textHelpers/textParsing";
-import { gameToString } from "../textHelpers/textFormatting";
 import { handleSteamImportCollectorError } from "../errorHandling/replyTimeout";
 import { Message, SlashCommandBuilder } from "discord.js";
 import { insertGame } from "../db/sequelizeDbLayer";
@@ -178,7 +177,7 @@ export default {
       await mapGameToSteamUser(game, steamUserPlatformMapping);
 
       if (tagsMessage) {
-        await tagsMessage.reply(`Successfully saved ${gameToString(game)}`);
+        await tagsMessage.reply(`Successfully saved ${game.toString()}`);
       }
 
       importedSteamGames.push(game);

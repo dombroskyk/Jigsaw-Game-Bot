@@ -1,6 +1,5 @@
 import path from "node:path";
 import { getSteamUserPlatformMappings } from '../db/sequelizeDbLayer';
-import { registeredSteamUserToString } from "../textHelpers/textFormatting";
 import { SlashCommandBuilder } from "discord.js";
 
 export default {
@@ -14,7 +13,7 @@ export default {
     if (!registeredSteamUsers.length) {
       interaction.reply("No registered Steam users... yet");
     } else {
-      let registeredSteamUsersFormattedStrings = await Promise.all(registeredSteamUsers.map(async registeredSteamUser => { return await registeredSteamUserToString(registeredSteamUser) }));
+      let registeredSteamUsersFormattedStrings = await Promise.all(registeredSteamUsers.map(async registeredSteamUser => await registeredSteamUser.toString()));
       let registeredSteamUsersString = registeredSteamUsersFormattedStrings.join("\n");
 
       interaction.reply(registeredSteamUsersString);

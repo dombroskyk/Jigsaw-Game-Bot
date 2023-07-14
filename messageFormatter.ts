@@ -1,6 +1,5 @@
 import { Game } from "models/models";
-import { gameToString } from "./textHelpers/textFormatting";
-import { ActionRowBuilder, ButtonComponent, ButtonStyle, ButtonBuilder, InteractionReplyOptions } from "discord.js";
+import { ActionRowBuilder, ButtonStyle, ButtonBuilder, InteractionReplyOptions } from "discord.js";
 
 export const YES_GAME_BUTTON_ID = "YesGame";
 const YES_GAME_LABEL = "Let's play!";
@@ -46,7 +45,7 @@ export function formatGameSuggestion(game:Game):InteractionReplyOptions {
     tagRows.push(new ActionRowBuilder<ButtonBuilder>().addComponents(noTagComponents.slice(5)));
   }
 
-  return { content: `How about '${gameToString(game)}'?`, components: [gameRow, ...tagRows] };
+  return { content: `How about '${game.toString()}'?`, components: [gameRow, ...tagRows] };
 }
 
 export function generatePlayerButtons(selectedPlayerButtons:number[] = []): ActionRowBuilder<ButtonBuilder>[] {

@@ -1,5 +1,4 @@
 import { getGames } from "../db/sequelizeDbLayer";
-import { gameToString } from "../textHelpers/textFormatting";
 import path from "node:path";
 import { handleCollectorError } from "../errorHandling/replyTimeout";
 import { NO_GAME_BUTTON_ID, YES_GAME_BUTTON_ID, formatGameSuggestion } from "../messageFormatter";

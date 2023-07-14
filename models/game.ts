@@ -52,6 +52,10 @@ class Game extends Model<InferAttributes<Game, { omit: 'Tags' | 'SteamOwners' }>
         tags: Association<Game, Tag>;
         steamOwners: Association<Game, UserPlatformMapping>;
     };
+
+    toString(): string {
+        return `${this.name}, #: ${this.lowerPlayerBound} - ${this.upperPlayerBound}, Tags: ${this.Tags ? this.Tags.map(tag => tag.name).join(", ") : "none"}`;
+    }
 }
 
 export {

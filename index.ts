@@ -2,13 +2,11 @@ import * as dotenv from 'dotenv';
 // import 'source-map-support/register';
 import { Client, GatewayIntentBits, Events, Collection, CommandInteraction, CacheType } from "discord.js";
 import { getRawCommandArguments, getPlayerNumBounds, getTagsFromMessage } from "./textHelpers/textParsing";
-import { gameToString } from "./textHelpers/textFormatting";
 import { setInteraction, startMessageContext, setClient } from "./messageContextHelper";
 import { addCommandsFromDir } from './commandRegistrationHelpers';
 import { settings } from './settings';
 import { closeDb } from './db/sequelizeDbLayer';
 import { CommandDto } from 'models/commandDto';
-
 //todo: is there someway to DI this or pass it around?
 dotenv.config();
 
@@ -21,6 +19,7 @@ dotenv.config();
 // minimum permissions
 // ephemeral responses
 // mac support flag
+// edit game
 const client = new Client({ intents: [GatewayIntentBits.GuildMembers, GatewayIntentBits.GuildMessageReactions, GatewayIntentBits.GuildMessages,
                                       GatewayIntentBits.GuildScheduledEvents, GatewayIntentBits.Guilds, GatewayIntentBits.MessageContent] });
 
