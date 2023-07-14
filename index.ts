@@ -1,7 +1,6 @@
 import * as dotenv from 'dotenv';
 // import 'source-map-support/register';
-import { Client, GatewayIntentBits, Events, Collection, CommandInteraction, CacheType } from "discord.js";
-import { getRawCommandArguments, getPlayerNumBounds, getTagsFromMessage } from "./textHelpers/textParsing";
+import { Client, GatewayIntentBits, Events, Collection } from "discord.js";
 import { setInteraction, startMessageContext, setClient } from "./messageContextHelper";
 import { addCommandsFromDir } from './commandRegistrationHelpers';
 import { settings } from './settings';
@@ -20,6 +19,7 @@ dotenv.config();
 // ephemeral responses
 // mac support flag
 // edit game
+// add help text to CommandDto and use in help command
 const client = new Client({ intents: [GatewayIntentBits.GuildMembers, GatewayIntentBits.GuildMessageReactions, GatewayIntentBits.GuildMessages,
                                       GatewayIntentBits.GuildScheduledEvents, GatewayIntentBits.Guilds, GatewayIntentBits.MessageContent] });
 
@@ -43,15 +43,15 @@ client.on(Events.Error, error => {
   console.log(`Client error: ${error}`);
 });
 
-client.on(Events.MessageCreate, async msg => {
-  if (msg.author.bot) return;
-  if (!msg.mentions.users.filter(u => u.id === client.user!.id).size) return;
+// client.on(Events.MessageCreate, async msg => {
+//   if (msg.author.bot) return;
+//   if (!msg.mentions.users.filter(u => u.id === client.user!.id).size) return;
 
-  startMessageContext(msg);
+//   startMessageContext(msg);
 
-  const messageText = msg.content;
-  const messageTextLower = messageText.toLowerCase();
-});
+//   const messageText = msg.content;
+//   const messageTextLower = messageText.toLowerCase();
+// });
 
 client.on(Events.InteractionCreate, async (interaction) => {
   setInteraction(interaction);

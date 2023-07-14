@@ -8,7 +8,7 @@ const DEBUG_COMMANDS_DIR = "debug";
 
 export function addCommandsFromDir(callback) {
   const commandsPath = path.join(__dirname, COMMANDS_DIR);
-  let commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.ts'));
+  const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.ts'));
 
   if (settings.DEBUG_MODE) {
     const debugCommandsPath = path.join(__dirname, COMMANDS_DIR, DEBUG_COMMANDS_DIR);
