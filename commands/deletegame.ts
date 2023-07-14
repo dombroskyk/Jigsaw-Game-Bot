@@ -22,14 +22,14 @@ export default {
       await interaction.reply(`Game ${gameName} could not be found.`);
     } else {
       let buffer = "";
-      gamesToDelete.forEach(async (game) => {
-        await deleteGame(game);
+      for (const gameToDelete of gamesToDelete) {
+        await deleteGame(gameToDelete);
 
         if (buffer !== "") {
           buffer += "\n";
         }
-        buffer += `Deleted game '${game.name}'.`;
-      })
+        buffer += `Deleted game '${gameToDelete.name}'.`;
+      }
 
       await interaction.reply(buffer);
     }

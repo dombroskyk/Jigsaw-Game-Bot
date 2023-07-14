@@ -18,7 +18,6 @@ dotenv.config();
 // -- import games wizard
 // remove tag interaction
 // string constants to common file?
-// MVP: slash commands
 // minimum permissions
 // ephemeral responses
 // mac support flag
@@ -53,7 +52,6 @@ client.on(Events.MessageCreate, async msg => {
 
   const messageText = msg.content;
   const messageTextLower = messageText.toLowerCase();
-  //   handleHelp(msg);
 });
 
 client.on(Events.InteractionCreate, async (interaction) => {
@@ -77,6 +75,5 @@ client.on(Events.InteractionCreate, async (interaction) => {
   }
 });
 
-// initializeDatabase();
 console.log("Attempting to log in");
 client.login(process.env.CLIENT_TOKEN);

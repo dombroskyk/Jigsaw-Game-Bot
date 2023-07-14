@@ -1,22 +1,20 @@
 import { getGames } from "../db/sequelizeDbLayer";
 import { gameToString } from "../textHelpers/textFormatting";
 import path from "node:path";
-import { addPlayerNumFilter, addGameFilter, addTagFilter } from "../messageContextHelper";
 import { handleCollectorError } from "../errorHandling/replyTimeout";
-import { formatGameSuggestion } from "../messageFormatter";
+import { NO_GAME_BUTTON_ID, YES_GAME_BUTTON_ID, formatGameSuggestion } from "../messageFormatter";
 import { getTagAndIntentionFromId } from "../textHelpers/textParsing";
 import { Game } from "models/models";
-import { CommandDto } from "models/commandDto";
-import { SlashCommandBuilder } from "discord.js";
+import { ComponentType, InteractionReplyOptions, Message, MessageComponentInteraction, SlashCommandBuilder } from "discord.js";
+import { GetGamesFilter } from "../models/getGamesFilter";
 
 const NUM_PLAYERS_ARG_KEY = "num_players";
 const ONLY_OWNED_GAMES_ARG_KEY = "only_owned_games"
 
-const BUTTON_COMPONENT_TYPE = 2;
 const INPUT_TIMEOUT_MILLISECONDS = 45 * 1000;
 
 
-const respondToMessage = async (replyTo, content) => {
+const respondToMessage = async (replyTo:MessageComponentInteraction, content:InteractionReplyOptions | string): Promise<Message<boolean>> => {
   let sentMessage;
   if (replyTo["deferred"] || replyTo["replied"]) {
     sentMessage = await replyTo.followUp(content);
@@ -37,54 +35,51 @@ export default {
     .addIntegerOption(option =>
       option.setName(NUM_PLAYERS_ARG_KEY)
         .setDescription("Number of players")
-        .setRequired(true))
-    .addBooleanOption(option =>
-      option.setName(ONLY_OWNED_GAMES_ARG_KEY)
-        .setDescription("Should Jigsaw only suggest games owned by all?")
-        .setRequired(false)),
+        .setRequired(true)),
+    // TODO: 
+    // .addBooleanOption(option =>
+    //   option.setName(ONLY_OWNED_GAMES_ARG_KEY)
+    //     .setDescription("Should Jigsaw only suggest games owned by all?")
+    //     .setRequired(false)),
 
   async execute(interaction) {
     const numPlayers = interaction.options.getInteger(NUM_PLAYERS_ARG_KEY);
-    //const onlyOwnedGames = interaction.options.getBoolean(ONLY_OWNED_GAMES_ARG_KEY);
+    //TODO: const onlyOwnedGames = interaction.options.getBoolean(ONLY_OWNED_GAMES_ARG_KEY);
 
     let currInteraction = interaction;
-    currInteraction = await respondToMessage(currInteraction, "So you want to play a game...")
+    await respondToMessage(currInteraction, "So you want to play a game...")
 
-    let filter = addPlayerNumFilter({}, numPlayers);
+    let filter:GetGamesFilter = new GetGamesFilter(numPlayers)
     let games:Game[] = await getGames(filter);
     while (games.length > 0) {
-
-      if (!games.length) {
-        await respondToMessage(currInteraction, "We ran out of games! Lower your standards and try again.");
-        return;
-      }
       const game = games[Math.floor(Math.random() * games.length)];
-
       const gameSuggestionMessage = await respondToMessage(currInteraction, formatGameSuggestion(game));
 
-      const gameSuggestionMessageFilter = i => i.user.id === interaction.user.id;
       try {
-        const gameSuggestionFeedback = await gameSuggestionMessage.awaitMessageComponent({ gameSuggestionMessageFilter, componentType: BUTTON_COMPONENT_TYPE, time: INPUT_TIMEOUT_MILLISECONDS, max: 1, errors: ["time"] });
+        const gameSuggestionMessageFilter = i => i.user.id === interaction.user.id;
+        const gameSuggestionFeedback = await gameSuggestionMessage.awaitMessageComponent({ filter: gameSuggestionMessageFilter, componentType: ComponentType.Button, time: INPUT_TIMEOUT_MILLISECONDS });
         await gameSuggestionFeedback.deferUpdate();
 
         const buttonId = gameSuggestionFeedback.customId;
         currInteraction = gameSuggestionFeedback.message;
-        if (buttonId === "YesGame") {
+        if (buttonId === YES_GAME_BUTTON_ID) {
           await respondToMessage(currInteraction, `Excellent choice... enjoy '${game.name}'!`);
-          break;
-        } else if (buttonId === "NoGame") {
-          filter = await addGameFilter(filter, game.name);
-          continue;
+          return;
+        } else if (buttonId === NO_GAME_BUTTON_ID) {
+          filter.addGameFilter(game.name);
         } else {
           const tagAndIntention = getTagAndIntentionFromId(buttonId);
-          filter = await addTagFilter(filter, tagAndIntention);
-          continue;
+          filter.addTagFilter(tagAndIntention.tag, tagAndIntention.intention);
         }
 
+        games = await getGames(filter);
       } catch (ex) {
         handleCollectorError(ex, gameSuggestionMessage);
         return;
       }
     }
+
+    await respondToMessage(currInteraction, "We ran out of games! Lower your standards and try again.");
+    return;
   }
 }

@@ -1,7 +1,7 @@
-import { CreationAttributes, InferCreationAttributes, Op, Sequelize } from "sequelize";
+import { FindOptions, IncludeOptions, Op, Sequelize } from "sequelize";
 import * as dotenv from 'dotenv';
 import { Game, GamesTableDefinition, UserPlatformMapping, UserPlatformMappingsTableDefinition, Tag, TagsTableDefinition } from "../models/models";
-import { isTaggedTemplateExpression } from "typescript";
+import { GetGamesFilter } from "models/getGamesFilter";
 dotenv.config();
 
 const sequelize = new Sequelize('Jigsaw', process.env.SEQUELIZE_DB_USER!, process.env.SEQUELIZE_DB_PASSWORD!, {
@@ -22,7 +22,9 @@ Game.belongsToMany(Tag, { through: 'Games_Tags' });
 Game.belongsToMany(UserPlatformMapping, { through: 'Game_SteamUserPlatformMapping', as: 'SteamOwner'});
 UserPlatformMapping.belongsToMany(Game, { through: 'Game_SteamUserPlatformMapping', as: 'SteamGames'});
 
-sequelize.sync({alter: true});
+// sequelize.sync({force: true});
+// sequelize.sync({alter: true});
+sequelize.sync();
 
 export async function insertGame(gameVals:Game, tags:Tag[]): Promise<Game> {
 	const game = await gameVals.save();
@@ -31,13 +33,52 @@ export async function insertGame(gameVals:Game, tags:Tag[]): Promise<Game> {
 	return await getGameById(game.id);
 }
 
-export async function getGames(customFilter = {}): Promise<Game[]> {
-	// let whereClause = {};
-	// if (customFilter !== {})
-	// {
+export async function getGames(getGamesFilter?: GetGamesFilter): Promise<Game[]> {
+	let gameFindOptions:FindOptions = { 
+		include: {
+			model: Tag
+		}
+	};
+	if (typeof getGamesFilter !== "undefined" && getGamesFilter !== null) {
+		let yesTagsWhere:any = null;
+		let noTagsWhere:any = null;
+		if (getGamesFilter.yesTags.length) {
+			yesTagsWhere = {
+				'$Tags.name$': { [Op.in]: getGamesFilter.yesTags }
+			}
+		}
 
-	// }
-	return await Game.findAll({ include: Tag });
+		if (getGamesFilter.noTags.length) {
+			noTagsWhere = {
+				'$Tags.name$': { [Op.notIn]: getGamesFilter.noTags }
+			}
+		}
+
+		if (yesTagsWhere !== null && noTagsWhere !== null) {
+			gameFindOptions.where = {
+				[Op.and]: [
+					yesTagsWhere,
+					noTagsWhere
+				]
+			}
+		} else if (yesTagsWhere !== null) {
+			gameFindOptions.where = yesTagsWhere;
+		} else if (noTagsWhere !== null) {
+			gameFindOptions.where = noTagsWhere;
+		} 
+		
+		if (typeof gameFindOptions.where === "undefined") {
+			gameFindOptions.where = {};
+		}
+
+		gameFindOptions.where['lowerPlayerBound'] = { [Op.lte]: getGamesFilter.numPlayers };
+		gameFindOptions.where['upperPlayerBound'] = { [Op.gte]: getGamesFilter.numPlayers };
+	}
+
+	const games = await Game.findAll(gameFindOptions);
+	return games.filter((game) => {
+		return !getGamesFilter?.games.some((gameName) => !gameName.toLocaleLowerCase().localeCompare(game.name.toLocaleLowerCase()));
+	});
 }
 
 async function getGameById(id:number): Promise<Game> {
@@ -116,7 +157,7 @@ export async function getImportedSteamGames(): Promise<Game[]> {
 }
 
 export async function mapGameToSteamUser(steamGame:Game, userPlatformMapping:UserPlatformMapping): Promise<void> {
-	if (!await steamGame.hasSteamOwner(userPlatformMapping)) {
+	if (!(await steamGame.hasSteamOwner(userPlatformMapping))) {
 		steamGame.addSteamOwner(userPlatformMapping);
 		steamGame.save();
 	}

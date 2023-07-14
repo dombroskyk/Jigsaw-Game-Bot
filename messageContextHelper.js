@@ -16,37 +16,6 @@ export function setMessageContext(message, filter) {
   currMessage = message;
 }
 
-export function addGameFilter(filter, gameName) {
-  if (!("games" in filter)) {
-    filter.games = [];
-  }
-
-  filter.games.push(gameName);
-  return filter;
-}
-
-export function addTagFilter(filter, tagAndIntention) {
-  if (!("tags" in filter)) {
-    filter.tags = { yes: [], no: [] };
-  }
-
-  if (!("yes" in filter.tags)) {
-    filter.tags.yes = [];
-  }
-
-  if (!("no" in filter.tags)) {
-    filter.tags.no = [];
-  }
-
-  filter.tags[tagAndIntention.intention].push(tagAndIntention.tag);
-  return filter;
-}
-
-export function addPlayerNumFilter(filter, numPlayers) {
-  filter.numPlayers = numPlayers;
-  return filter;
-}
-
 export function addPlayerRange(numPlayer) {
   currPlayerRange.push(numPlayer);
   return currPlayerRange.sort();
@@ -57,7 +26,6 @@ export function setGame(game) {
 }
 
 export function setInteraction(interaction) {
-  //console.log(interaction);
   currInteraction = interaction;
 }
 

@@ -22,7 +22,6 @@ export default {
 
     let buffer = "";
     for (const game of games) {
-      console.log(game);
       const gameString = gameToString(game);
       if (gameString.length + buffer.length + 2 >= MAX_DISCORD_MESSAGE_LENGTH) {
         await interaction.followUp(buffer);
@@ -31,9 +30,6 @@ export default {
 
       buffer += gameString + "\n";
     }
-    
-    console.log("buffer");
-    console.log(buffer);
 
     await interaction.followUp(buffer);
   }

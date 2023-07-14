@@ -11,3 +11,11 @@ export const handleCollectorError = (ex, messageToReply) => {
     messageToReply.reply("Sorry, we encountered a problem. Please start over if you wish to continue.");
   }
 }
+
+export const handleSteamImportCollectorError = (ex, messageToReply, gameId = 0) => {
+  if ((typeof ex.size !== "undefined" && ex.size === 0) || ex.message.search("time") !== -1) {
+    messageToReply.reply(`Sorry, we didn't receive input in time. Please start over if you wish to continue. Provide id '${gameId}' to the gameId option of steamimport to pickup where you left off.`);
+  } else {
+    messageToReply.reply(`Sorry, we encountered a problem. Please start over if you wish to continue. Provide id '${gameId}' to the gameId option of steamimport to pickup where you left off.`);
+  }
+}

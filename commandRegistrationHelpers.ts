@@ -15,16 +15,13 @@ export function addCommandsFromDir(callback) {
     const debugCommandFiles = fs.readdirSync(debugCommandsPath).filter(file => file.endsWith('.ts'));
 
     for (const debugFile of debugCommandFiles) {
-      console.log(debugFile);
       const filePath = path.join(debugCommandsPath, debugFile);
       const command:CommandDto = require(filePath).default;
       callback(command);
     }
-    
   }
 
   for (const file of commandFiles) {
-    console.log(file);
     const filePath = path.join(commandsPath, file);
     const command:CommandDto = require(filePath).default;
     callback(command);

@@ -7,7 +7,7 @@ export function getRawCommandArguments(messageContent, command) {
 }
 
 export function getPlayerNumBounds(message) {
-  const messageContent = message.content.trim();
+  const messageContent:string = message.content.trim();
   if (!messageContent.includes('-')) {
     message.reply("Invalid format supplied, expecting #-#");
     return {};
@@ -26,20 +26,19 @@ export function getPlayerNumBounds(message) {
   return { lowerBound: leftNum, upperBound: rightNum, };
 }
 
-export function getTagsFromMessage(message) {
-  console.log(message);
-  const messageContent = message.content.trim();
-  const tagSplits = messageContent.split(",");
-  const trimmedTags = tagSplits.map(tag => { return tag.trim() });
+export function getTagsFromMessage(message):string[] {
+  const messageContent:string = message.content.trim();
+  const tagSplits:string[] = messageContent.split(",");
+  const trimmedTags = tagSplits.map((tag:string) => tag.trim()).filter((tag:string) => tag.toLocaleLowerCase() !== "none");
 
   return trimmedTags;
 }
 
-export function getNumPlayersFromId(id) {
-  return id.split("_")[0];
+export function getNumPlayersFromId(id:string): number {
+  return parseInt(id.split("_")[0]);
 }
 
-export function getTagAndIntentionFromId(customId) {
+export function getTagAndIntentionFromId(customId:string) {
   const splitCustomId = customId.trim().split("_");
   
   return { tag: splitCustomId[0], intention: splitCustomId[1]};
