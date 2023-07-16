@@ -1,30 +1,41 @@
 import path from "node:path";
 import { Game, Tag } from "../models/models";
-import { dumpDb, findOrCreateTags, getGames, insertGame } from "../db/sequelizeDbLayer";
-import { CommandDto } from "models/commandDto.js";
-import { Interaction, SlashCommandBuilder } from "discord.js";
-import { CreationAttributes, InferCreationAttributes } from "sequelize";
+import { findOrCreateTags, getGames, insertGame } from "../db/sequelizeDbLayer";
+import { SlashCommandBuilder } from "discord.js";
 
+const COMMAND_NAME = path.basename(__filename, ".ts");
+const COMMAND_DESCRIPTION = "Manually add a game to Jigsaw's library.";
 const GAME_NAME_ARG_KEY = "game_name";
-const LOWER_PLAYER_BOUND_ARG_KEY = "lower_player_bound"
-const UPPER_PLAYER_BOUND_ARG_KEY = "upper_player_bound"
+const GAME_NAME_DESCRIPTION = "Name of game to add";
+const LOWER_PLAYER_BOUND_ARG_KEY = "lower_player_bound";
+const LOWER_PLAYER_BOUND_DESCRIPTION = "Player range - Lower bound";
+const UPPER_PLAYER_BOUND_ARG_KEY = "upper_player_bound";
+const UPPER_PLAYER_BOUND_DESCRIPTION = "Player range - Upper bound";
 const TAG_ARG_KEY = "tag";
 
 export default {
+  helpText: `${COMMAND_NAME} - ${COMMAND_DESCRIPTION} Good for games that aren't on major platforms.
+  Args:
+  - ${GAME_NAME_ARG_KEY} (required): ${GAME_NAME_DESCRIPTION}
+  - ${LOWER_PLAYER_BOUND_ARG_KEY} (required): ${LOWER_PLAYER_BOUND_DESCRIPTION}
+  - ${UPPER_PLAYER_BOUND_ARG_KEY} (required): ${UPPER_PLAYER_BOUND_DESCRIPTION}
+  - ${TAG_ARG_KEY}1-10: Describe the game being added with one or more tags`,
+
+  
   data: new SlashCommandBuilder()
-    .setName(path.basename(__filename, ".ts"))
-    .setDescription("Add a game for Jigsaw to remember")
+    .setName(COMMAND_NAME)
+    .setDescription(COMMAND_DESCRIPTION)
     .addStringOption(option =>
       option.setName(GAME_NAME_ARG_KEY)
-        .setDescription("Name of game")
+        .setDescription(GAME_NAME_DESCRIPTION)
         .setRequired(true))
     .addIntegerOption(option =>
       option.setName(LOWER_PLAYER_BOUND_ARG_KEY)
-        .setDescription("Player range - Lower bound")
+        .setDescription(LOWER_PLAYER_BOUND_DESCRIPTION)
         .setRequired(true))
     .addIntegerOption(option =>
       option.setName(UPPER_PLAYER_BOUND_ARG_KEY)
-        .setDescription("Player range - Upper bound")
+        .setDescription(UPPER_PLAYER_BOUND_DESCRIPTION)
         .setRequired(true))
     .addStringOption(option =>
       option.setName(`${TAG_ARG_KEY}1`)
@@ -79,6 +90,10 @@ export default {
         const newLowerPlayerBound = upperPlayerBound;
         upperPlayerBound = lowerPlayerBound;
         lowerPlayerBound = newLowerPlayerBound;
+      }
+
+      if (upperPlayerBound > 10) {
+        upperPlayerBound = 10;
       }
 
       let tags:Tag[] = [];

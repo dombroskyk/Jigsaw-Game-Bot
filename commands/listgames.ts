@@ -4,10 +4,17 @@ import { SlashCommandBuilder } from "discord.js";
 
 const MAX_DISCORD_MESSAGE_LENGTH = 2000;
 
+const COMMAND_NAME = path.basename(__filename, ".ts");
+const COMMAND_DESCRIPTION = "List the games registered with Jigsaw.";
+
 export default {
+  helpText: `${COMMAND_NAME} - ${COMMAND_DESCRIPTION}
+  Args: None.`,
+
+
   data: new SlashCommandBuilder()
-    .setName(path.basename(__filename, ".ts"))
-    .setDescription("List the games registered with Jigsaw"),
+    .setName(COMMAND_NAME)
+    .setDescription(COMMAND_DESCRIPTION),
     
 
   async execute(interaction) {

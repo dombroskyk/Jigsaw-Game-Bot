@@ -7,11 +7,13 @@ import { Game } from "models/models";
 import { ComponentType, InteractionReplyOptions, Message, MessageComponentInteraction, SlashCommandBuilder } from "discord.js";
 import { GetGamesFilter } from "../models/getGamesFilter";
 
+const COMMAND_NAME = path.basename(__filename, ".ts");
+const COMMAND_DESCRIPTION = "Allow Jigsaw to suggest a game for you to play, randomly, or by narrowing down results.";
 const NUM_PLAYERS_ARG_KEY = "num_players";
-const ONLY_OWNED_GAMES_ARG_KEY = "only_owned_games"
+const NUM_PLAYERS_DESCRIPTION = "Number of players";
+const ONLY_OWNED_GAMES_ARG_KEY = "only_owned_games";
 
 const INPUT_TIMEOUT_MILLISECONDS = 45 * 1000;
-
 
 const respondToMessage = async (replyTo:MessageComponentInteraction, content:InteractionReplyOptions | string): Promise<Message<boolean>> => {
   let sentMessage;
@@ -28,12 +30,15 @@ const respondToMessage = async (replyTo:MessageComponentInteraction, content:Int
 }
 
 export default {
+  helpText: `${COMMAND_NAME} - ${COMMAND_DESCRIPTION}
+  Args:
+  - ${NUM_PLAYERS_ARG_KEY} (required): ${NUM_PLAYERS_DESCRIPTION}`,
   data: new SlashCommandBuilder()
-    .setName(path.basename(__filename, ".ts"))
-    .setDescription("Allow Jigsaw to suggest a game for you to play")
+    .setName(COMMAND_NAME)
+    .setDescription(COMMAND_DESCRIPTION)
     .addIntegerOption(option =>
       option.setName(NUM_PLAYERS_ARG_KEY)
-        .setDescription("Number of players")
+        .setDescription(NUM_PLAYERS_DESCRIPTION)
         .setRequired(true)),
     // TODO: 
     // .addBooleanOption(option =>

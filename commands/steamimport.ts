@@ -1,6 +1,6 @@
 import path from "node:path";
 import axios from 'axios';
-import { findOrCreateTags, getGames, getImportedSteamGames, getSteamUserPlatformMappingByDiscordId, mapGameToSteamUser } from "../db/sequelizeDbLayer"; // getImportedSteamGameIds, writeImportedSteamGameIds,
+import { findOrCreateTags, getImportedSteamGames, getSteamUserPlatformMappingByDiscordId, mapGameToSteamUser } from "../db/sequelizeDbLayer"; // getImportedSteamGameIds, writeImportedSteamGameIds,
 import { formatNewGameNumPlayersMessage } from "../messageFormatter";
 import { getTagsFromMessage, getNumPlayersFromId } from "../textHelpers/textParsing";
 import { handleSteamImportCollectorError } from "../errorHandling/replyTimeout";
@@ -8,25 +8,35 @@ import { Message, SlashCommandBuilder } from "discord.js";
 import { insertGame } from "../db/sequelizeDbLayer";
 import { Game, Tag, UserPlatformMapping } from "../models/models";
 
-
+const COMMAND_NAME = path.basename(__filename, ".ts");
+const COMMAND_DESCRIPTION = "Help Jigsaw learn more games from a Steam library!";
 const USER_ARG_KEY = "user";
-const STEAM_GAME_ID_KEY = "steam_id"
+const USER_DESCRIPTION = "User's Steam library to import";
+const STEAM_GAME_ID_KEY = "steam_id";
+const STEAM_GAME_ID_DESCRIPTION = "A Steam game id to fast forward to in the import process";
+
 const BUTTON_COMPONENT_TYPE = 2;
 const INPUT_TIMEOUT_MILLISECONDS = 45 * 1000;
 
 
 
 export default {
+  helpText: `${COMMAND_NAME} - ${COMMAND_DESCRIPTION}
+  Args:
+  ${USER_ARG_KEY} (required): ${USER_DESCRIPTION}
+  ${STEAM_GAME_ID_KEY}: ${STEAM_GAME_ID_DESCRIPTION}`,
+
+
   data: new SlashCommandBuilder()
-    .setName(path.basename(__filename, ".ts"))
-    .setDescription("Help Jigsaw learn more games from a Steam library!")
+    .setName(COMMAND_NAME)
+    .setDescription(COMMAND_DESCRIPTION)
     .addUserOption(option =>
       option.setName(USER_ARG_KEY)
-        .setDescription("User's library to import")
+        .setDescription(USER_DESCRIPTION)
         .setRequired(true))
     .addIntegerOption(option =>
       option.setName(STEAM_GAME_ID_KEY)
-        .setDescription("A steam game id to fast forward to in the import process")),
+        .setDescription(STEAM_GAME_ID_DESCRIPTION)),
 
 
   async execute(interaction) {

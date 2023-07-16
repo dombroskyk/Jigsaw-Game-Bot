@@ -2,15 +2,23 @@ import path from "node:path";
 import { deleteGame, getGamesByName } from "../db/sequelizeDbLayer";
 import { SlashCommandBuilder } from "discord.js";
 
+const COMMAND_NAME = path.basename(__filename, ".ts");
+const COMMAND_DESCRIPTION = "Delete a game known by Jigsaw";
 const GAME_NAME_ARG_KEY = "game_name";
+const GAME_NAME_DESCRIPTION = "Name of game to delete, as it is known to Jigsaw";
 
 export default {
+  helpText: `${COMMAND_NAME} - ${COMMAND_DESCRIPTION}
+  Args:
+  - ${GAME_NAME_ARG_KEY} (required): ${GAME_NAME_DESCRIPTION}`,
+
+
   data: new SlashCommandBuilder()
-    .setName(path.basename(__filename, ".ts"))
-    .setDescription("Delete a game known by Jigsaw")
+    .setName(COMMAND_NAME)
+    .setDescription(COMMAND_DESCRIPTION)
     .addStringOption(option =>
       option.setName(GAME_NAME_ARG_KEY)
-        .setDescription("Name of game to delete")
+        .setDescription(GAME_NAME_ARG_KEY)
         .setRequired(true)),
 
 

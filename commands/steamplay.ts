@@ -17,6 +17,7 @@ const USER9_ARG_KEY = "user9";
 const USER10_ARG_KEY = "user10";
 
 export default {
+  helpText: "",
 	data: new SlashCommandBuilder()
     .setName(path.basename(__filename, ".ts"))
     .setDescription("Let Jigsaw suggest a Steam game for you to play!")
