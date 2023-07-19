@@ -1,6 +1,6 @@
 import path from "node:path";
 import { getSteamUserPlatformMappings } from '../db/sequelizeDbLayer';
-import { SlashCommandBuilder } from "discord.js";
+import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
 
 const COMMAND_NAME = path.basename(__filename, ".ts");
 const COMMAND_DESCRIPTION = "List the Steam Ids registered with Jigsaw.";
@@ -15,7 +15,7 @@ export default {
     .setDescription(COMMAND_DESCRIPTION),
 
 
-  async execute(interaction) {
+  async execute(interaction: ChatInputCommandInteraction) {
     const registeredSteamUsers = await getSteamUserPlatformMappings();
     if (!registeredSteamUsers.length) {
       interaction.reply("No registered Steam users... yet");
@@ -23,7 +23,7 @@ export default {
       let registeredSteamUsersFormattedStrings = await Promise.all(registeredSteamUsers.map(async registeredSteamUser => await registeredSteamUser.toString()));
       let registeredSteamUsersString = registeredSteamUsersFormattedStrings.join("\n");
 
-      interaction.reply(registeredSteamUsersString);
+      interaction.reply({ content: registeredSteamUsersString, ephemeral: true });
     }
   }
 };

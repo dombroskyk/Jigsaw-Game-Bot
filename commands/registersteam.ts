@@ -1,5 +1,5 @@
 import path from "node:path";
-import { SlashCommandBuilder } from "discord.js";
+import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
 import { insertSteamUserPlatformMapping } from "../db/sequelizeDbLayer";
 
 const COMMAND_NAME = path.basename(__filename, ".ts");
@@ -26,12 +26,12 @@ export default {
             .setDescription(STEAM_ID_DESCRIPTION)
             .setRequired(true)),
   
-	async execute(interaction) {
-    const receivedUser = interaction.options.getUser(USER_ARG_KEY);
-    const receivedSteamId = interaction.options.getString(STEAM_ID_ARG_KEY);
+	async execute(interaction: ChatInputCommandInteraction) {
+    const receivedUser = interaction.options.getUser(USER_ARG_KEY, true);
+    const receivedSteamId = interaction.options.getString(STEAM_ID_ARG_KEY, true);
 
     await insertSteamUserPlatformMapping(receivedUser.id, receivedSteamId);
   
-    interaction.reply(`Registered username '${receivedUser.username}' with Steam ID '${receivedSteamId}'`);
+    interaction.reply({ content: `Registered username '${receivedUser.username}' with Steam ID '${receivedSteamId}'`, ephemeral: true });
 	},
 };

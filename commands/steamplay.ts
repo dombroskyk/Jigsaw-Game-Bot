@@ -1,9 +1,7 @@
 import path from "node:path";
 import axios from 'axios';
-// import { getSteamUsers } from "../db/sequelizeDbLayer";
 import { Game } from "models/models";
 import { SlashCommandBuilder } from "discord.js";
-import { CommandDto } from "models/commandDto";
 
 const USER1_ARG_KEY = "user1";
 const USER2_ARG_KEY = "user2";

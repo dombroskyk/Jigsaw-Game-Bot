@@ -19,7 +19,6 @@ dotenv.config();
 // ephemeral responses
 // mac support flag
 // edit game
-// add help text to CommandDto and use in help command
 const client = new Client({ intents: [GatewayIntentBits.GuildMembers, GatewayIntentBits.GuildMessageReactions, GatewayIntentBits.GuildMessages,
                                       GatewayIntentBits.GuildScheduledEvents, GatewayIntentBits.Guilds, GatewayIntentBits.MessageContent] });
 

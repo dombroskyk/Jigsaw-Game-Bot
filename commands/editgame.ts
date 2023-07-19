@@ -1,10 +1,10 @@
 import path from "node:path";
 import { Game, Tag } from "../models/models";
 import { findOrCreateTags, getGames, insertGame } from "../db/sequelizeDbLayer";
-import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
+import { SlashCommandBuilder } from "discord.js";
 
 const COMMAND_NAME = path.basename(__filename, ".ts");
-const COMMAND_DESCRIPTION = "Manually add a game to Jigsaw's library.";
+const COMMAND_DESCRIPTION = "Edit a game within Jigsaw's library.";
 const GAME_NAME_ARG_KEY = "game_name";
 const GAME_NAME_DESCRIPTION = "Name of game to add";
 const LOWER_PLAYER_BOUND_ARG_KEY = "lower_player_bound";
@@ -79,13 +79,13 @@ export default {
         .setRequired(false)),
 
 
-  async execute(interaction: ChatInputCommandInteraction) {
+  async execute(interaction) {
     try {
-      await interaction.deferReply({ ephemeral: true });
-      const gameName = interaction.options.getString(GAME_NAME_ARG_KEY, true);
+      await interaction.deferReply();
+      const gameName = interaction.options.getString(GAME_NAME_ARG_KEY);
 
-      let lowerPlayerBound = interaction.options.getInteger(LOWER_PLAYER_BOUND_ARG_KEY, true);
-      let upperPlayerBound = interaction.options.getInteger(UPPER_PLAYER_BOUND_ARG_KEY, true);
+      let lowerPlayerBound = interaction.options.getInteger(LOWER_PLAYER_BOUND_ARG_KEY);
+      let upperPlayerBound = interaction.options.getInteger(UPPER_PLAYER_BOUND_ARG_KEY);
       if (lowerPlayerBound > upperPlayerBound) {
         const newLowerPlayerBound = upperPlayerBound;
         upperPlayerBound = lowerPlayerBound;

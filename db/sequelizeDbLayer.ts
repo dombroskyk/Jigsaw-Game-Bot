@@ -142,7 +142,7 @@ export async function getSteamUserPlatformMappingByDiscordId(discordId:string): 
 	return steamUserPlatformMapping;
 }
 
-export async function insertSteamUserPlatformMapping(discordId:string, steamId:number): Promise<UserPlatformMapping> {
+export async function insertSteamUserPlatformMapping(discordId: string, steamId?: string): Promise<UserPlatformMapping> {
 	return await UserPlatformMapping.create({ id: discordId, steamId: steamId});
 }
 

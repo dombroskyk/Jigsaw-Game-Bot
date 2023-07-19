@@ -1,6 +1,6 @@
 import path from "node:path";
 import { getGames } from "../db/sequelizeDbLayer";
-import { SlashCommandBuilder } from "discord.js";
+import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
 
 const MAX_DISCORD_MESSAGE_LENGTH = 2000;
 
@@ -17,26 +17,24 @@ export default {
     .setDescription(COMMAND_DESCRIPTION),
     
 
-  async execute(interaction) {
+  async execute(interaction: ChatInputCommandInteraction) {
     const games = await getGames();
     if (!games.length) {
-      await interaction.reply("No games stored... yet");
+      await interaction.reply({ content: "No games stored... yet", ephemeral: true });
       return;
     }
 
-    await interaction.reply(`Listing Games (${games.length}):`);
-
-    let buffer = "";
+    let buffer = `Listing Games (${games.length}):`;
     for (const game of games) {
       const gameString = game.toString();
       if (gameString.length + buffer.length + 2 >= MAX_DISCORD_MESSAGE_LENGTH) {
-        await interaction.followUp(buffer);
+        await interaction.followUp({ content: buffer, ephemeral: true });
         buffer = "";
       }
 
       buffer += gameString + "\n";
     }
 
-    await interaction.followUp(buffer);
+    await interaction.followUp({ content: buffer, ephemeral: true });
   }
 };

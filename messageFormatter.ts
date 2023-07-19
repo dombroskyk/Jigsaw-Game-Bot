@@ -1,12 +1,12 @@
 import { Game } from "models/models";
-import { ActionRowBuilder, ButtonStyle, ButtonBuilder, InteractionReplyOptions } from "discord.js";
+import { ActionRowBuilder, ButtonStyle, ButtonBuilder, InteractionReplyOptions, BaseMessageOptions } from "discord.js";
 
 export const YES_GAME_BUTTON_ID = "YesGame";
 const YES_GAME_LABEL = "Let's play!";
 export const NO_GAME_BUTTON_ID = "NoGame";
 const NO_GAME_LABEL = "Not this game";
 
-export function formatGameSuggestion(game:Game):InteractionReplyOptions {
+export function formatGameSuggestion(game: Game): InteractionReplyOptions {
   const gameRow = new ActionRowBuilder<ButtonBuilder>()
     .addComponents([
       new ButtonBuilder()
@@ -19,8 +19,8 @@ export function formatGameSuggestion(game:Game):InteractionReplyOptions {
         .setStyle(ButtonStyle.Danger)
     ]);
 
-  let yesTagComponents:ButtonBuilder[] = [];
-  let noTagComponents:ButtonBuilder[] = [];
+  let yesTagComponents: ButtonBuilder[] = [];
+  let noTagComponents: ButtonBuilder[] = [];
   const gameTags = game.Tags ?? [];
   for (const tag of gameTags) {
     yesTagComponents.push(
@@ -37,7 +37,7 @@ export function formatGameSuggestion(game:Game):InteractionReplyOptions {
     );
   }
 
-  let tagRows:ActionRowBuilder<ButtonBuilder>[] = [];
+  let tagRows: ActionRowBuilder<ButtonBuilder>[] = [];
   tagRows.push(new ActionRowBuilder<ButtonBuilder>().addComponents(yesTagComponents.slice(0, 5)));
   tagRows.push(new ActionRowBuilder<ButtonBuilder>().addComponents(noTagComponents.slice(0, 5)));
   if (yesTagComponents.length > 5) {
@@ -48,8 +48,8 @@ export function formatGameSuggestion(game:Game):InteractionReplyOptions {
   return { content: `How about '${game.toString()}'?`, components: [gameRow, ...tagRows] };
 }
 
-export function generatePlayerButtons(selectedPlayerButtons:number[] = []): ActionRowBuilder<ButtonBuilder>[] {
-  let playerNumButtons:ButtonBuilder[] = [];
+export function generatePlayerButtons(selectedPlayerButtons: number[] = []): ActionRowBuilder<ButtonBuilder>[] {
+  let playerNumButtons: ButtonBuilder[] = [];
 
   for (let i = 1; i < 10; i++) {
     const style = selectedPlayerButtons.includes(i) ? ButtonStyle.Success : ButtonStyle.Primary;
@@ -69,7 +69,7 @@ export function generatePlayerButtons(selectedPlayerButtons:number[] = []): Acti
       .setStyle(selectedPlayerButtons.includes(10) ? ButtonStyle.Success : ButtonStyle.Primary),
   );
 
-  let playerNumRows:ActionRowBuilder<ButtonBuilder>[] = [];
+  let playerNumRows: ActionRowBuilder<ButtonBuilder>[] = [];
   playerNumRows.push(new ActionRowBuilder<ButtonBuilder>().addComponents(playerNumButtons.slice(0, 5)));
   playerNumRows.push(new ActionRowBuilder<ButtonBuilder>().addComponents(playerNumButtons.slice(5)));
 
@@ -90,12 +90,12 @@ export function generateSkipAndEndButtons(): ActionRowBuilder<ButtonBuilder> {
   return new ActionRowBuilder<ButtonBuilder>().addComponents(skipButton, endButton);
 }
 
-export function formatNumberOfPlayersMessage():InteractionReplyOptions {
+export function formatNumberOfPlayersMessage(): InteractionReplyOptions {
   const text = "So you want to play a game...";
   return { content: text, components: generatePlayerButtons() };
 }
 
-export function formatNewGameNumPlayersMessage(gameName:string, includeSkipEndButtons:boolean, selectedPlayerButtons:number[] = []):InteractionReplyOptions {
+export function formatNewGameNumPlayersMessage(gameName: string, includeSkipEndButtons: boolean, selectedPlayerButtons: number[] = []): BaseMessageOptions {
   const text = `How many players can play ${gameName}? Click the buttons for the range of players that can play:`;
   let componentRows = generatePlayerButtons(selectedPlayerButtons);
   if (includeSkipEndButtons) {

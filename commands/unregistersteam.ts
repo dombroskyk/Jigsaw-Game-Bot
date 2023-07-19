@@ -1,6 +1,6 @@
 import path from "node:path";
 import { deleteSteamUserPlatformMappingByDiscordId } from '../db/sequelizeDbLayer';
-import { SlashCommandBuilder } from "discord.js";
+import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
 
 const COMMAND_NAME = path.basename(__filename, ".ts");
 const USER_ARG_KEY = "user";
@@ -19,9 +19,9 @@ export default {
                 .setDescription(USER_ARG_DESCRIPTION)
                 .setRequired(true)),
   
-    async execute(interaction) {
-        const receivedUser = interaction.options.getUser(USER_ARG_KEY);
+    async execute(interaction: ChatInputCommandInteraction) {
+        const receivedUser = interaction.options.getUser(USER_ARG_KEY, true);
         await deleteSteamUserPlatformMappingByDiscordId(receivedUser.id);
-        interaction.reply(`'${receivedUser.username}' is no longer registered`);
+        interaction.reply({ content: `'${receivedUser.username}' is no longer registered`, ephemeral: true});
     },
 };

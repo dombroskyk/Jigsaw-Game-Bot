@@ -1,6 +1,6 @@
 import path from "node:path";
 import { getTags } from "../db/sequelizeDbLayer";
-import { SlashCommandBuilder } from "discord.js";
+import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
 
 const COMMAND_NAME = path.basename(__filename, ".ts");
 const COMMAND_DESCRIPTION = "List the tags known with Jigsaw";
@@ -15,10 +15,11 @@ export default {
     .setDescription(COMMAND_DESCRIPTION),
 
 
-  async execute(interaction) {
+  async execute(interaction: ChatInputCommandInteraction) {
+    console.log(interaction);
     const tags = await getTags();
     if (!tags.length)
-      interaction.reply("No tags... yet");
-    interaction.reply(tags.map(tag => tag.name).join(", "));
+      interaction.reply({ content: "No tags... yet", ephemeral: true });
+    interaction.reply({ content: tags.map(tag => tag.name).join(", "), ephemeral: true });
   }
 };

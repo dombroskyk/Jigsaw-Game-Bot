@@ -4,7 +4,7 @@ import { handleCollectorError } from "../errorHandling/replyTimeout";
 import { NO_GAME_BUTTON_ID, YES_GAME_BUTTON_ID, formatGameSuggestion } from "../messageFormatter";
 import { getTagAndIntentionFromId } from "../textHelpers/textParsing";
 import { Game } from "models/models";
-import { ComponentType, InteractionReplyOptions, Message, MessageComponentInteraction, SlashCommandBuilder } from "discord.js";
+import { ChatInputCommandInteraction, ComponentType, InteractionReplyOptions, Message, MessageComponentInteraction, SlashCommandBuilder } from "discord.js";
 import { GetGamesFilter } from "../models/getGamesFilter";
 
 const COMMAND_NAME = path.basename(__filename, ".ts");
@@ -15,9 +15,9 @@ const ONLY_OWNED_GAMES_ARG_KEY = "only_owned_games";
 
 const INPUT_TIMEOUT_MILLISECONDS = 45 * 1000;
 
-const respondToMessage = async (replyTo:MessageComponentInteraction, content:InteractionReplyOptions | string): Promise<Message<boolean>> => {
+const respondToMessage = async (replyTo: MessageComponentInteraction | ChatInputCommandInteraction, content: string | InteractionReplyOptions): Promise<Message<boolean>> => {
   let sentMessage;
-  if (replyTo["deferred"] || replyTo["replied"]) {
+  if (replyTo.deferred || replyTo.replied) {
     sentMessage = await replyTo.followUp(content);
   } else {
     sentMessage = await replyTo.reply(content);
@@ -46,8 +46,8 @@ export default {
     //     .setDescription("Should Jigsaw only suggest games owned by all?")
     //     .setRequired(false)),
 
-  async execute(interaction) {
-    const numPlayers = interaction.options.getInteger(NUM_PLAYERS_ARG_KEY);
+  async execute(interaction: ChatInputCommandInteraction) {
+    const numPlayers = interaction.options.getInteger(NUM_PLAYERS_ARG_KEY, true);
     //TODO: const onlyOwnedGames = interaction.options.getBoolean(ONLY_OWNED_GAMES_ARG_KEY);
 
     let currInteraction = interaction;
@@ -65,9 +65,8 @@ export default {
         await gameSuggestionFeedback.deferUpdate();
 
         const buttonId = gameSuggestionFeedback.customId;
-        currInteraction = gameSuggestionFeedback.message;
         if (buttonId === YES_GAME_BUTTON_ID) {
-          await respondToMessage(currInteraction, `Excellent choice... enjoy '${game.name}'!`);
+          await respondToMessage(gameSuggestionFeedback, `Excellent choice... enjoy '${game.name}'!`);
           return;
         } else if (buttonId === NO_GAME_BUTTON_ID) {
           filter.addGameFilter(game.name);

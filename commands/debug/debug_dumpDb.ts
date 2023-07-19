@@ -1,5 +1,5 @@
 import path from "node:path";
-import { SlashCommandBuilder } from "discord.js";
+import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
 import { dumpDb } from "../../db/sequelizeDbLayer";
 
 export default {
@@ -8,8 +8,8 @@ export default {
     .setDescription("ADMIN - Examine database contents"),
 
 
-  async execute(interaction) {
+  async execute(interaction: ChatInputCommandInteraction) {
     await dumpDb();
-    await interaction.reply("Database dumped to console.");
+    await interaction.reply({ content: "Database dumped to console.", ephemeral: true });
   }
 }

@@ -18,7 +18,7 @@ const UserPlatformMappingsTableDefinition = {
 
 class UserPlatformMapping extends Model<InferAttributes<UserPlatformMapping>, InferCreationAttributes<UserPlatformMapping>> {
     declare id: string;
-    declare steamId?: number | null;
+    declare steamId?: string | null;
 
     declare createdAt: CreationOptional<Date>;
     declare updatedAt: CreationOptional<Date>;

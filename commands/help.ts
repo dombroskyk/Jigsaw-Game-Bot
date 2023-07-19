@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import { APIApplicationCommandOptionChoice, SlashCommandBuilder } from "discord.js";
+import { APIApplicationCommandOptionChoice, ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
 import { CommandDto } from "models/commandDto";
 
 const COMMAND_NAME_ARG_KEY = "command_name";
@@ -32,7 +32,7 @@ export default {
         )),
 
 
-  async execute(interaction) {
+  async execute(interaction: ChatInputCommandInteraction) {
     const commandName = interaction.options.getString(COMMAND_NAME_ARG_KEY);
     let helpText = "";
 

@@ -1,6 +1,6 @@
 import path from "node:path";
 import { CommandDto } from "models/commandDto";
-import { SlashCommandBuilder } from "discord.js";
+import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
 // import { getImportedSteamGameIds, writeImportedSteamGameIds } from "../../db/sqLiteDbLayer";
 
 const STEAM_GAME_ID_ARG_KEY = "steamgameid";
@@ -15,7 +15,7 @@ export default {
         .setRequired(false)),
 
 
-  async execute(interaction) {
+  async execute(interaction: ChatInputCommandInteraction) {
     // const steamGameIdArg = interaction.options.getString(STEAM_GAME_ID_ARG_KEY);
     // const importedSteamGameIds = await getImportedSteamGameIds();
 

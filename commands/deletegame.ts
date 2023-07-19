@@ -1,6 +1,6 @@
 import path from "node:path";
 import { deleteGame, getGamesByName } from "../db/sequelizeDbLayer";
-import { SlashCommandBuilder } from "discord.js";
+import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
 
 const COMMAND_NAME = path.basename(__filename, ".ts");
 const COMMAND_DESCRIPTION = "Delete a game known by Jigsaw";
@@ -22,12 +22,12 @@ export default {
         .setRequired(true)),
 
 
-  async execute(interaction) {
-    const gameName = interaction.options.getString(GAME_NAME_ARG_KEY);
+  async execute(interaction: ChatInputCommandInteraction) {
+    const gameName = interaction.options.getString(GAME_NAME_ARG_KEY, true);
 
     const gamesToDelete = await getGamesByName(gameName);
     if (gamesToDelete.length === 0) {
-      await interaction.reply(`Game ${gameName} could not be found.`);
+      await interaction.reply({ content: `Game ${gameName} could not be found.`, ephemeral: true });
     } else {
       let buffer = "";
       for (const gameToDelete of gamesToDelete) {
@@ -39,7 +39,7 @@ export default {
         buffer += `Deleted game '${gameToDelete.name}'.`;
       }
 
-      await interaction.reply(buffer);
+      await interaction.reply({ content: buffer, ephemeral: true });
     }
   }
 };
