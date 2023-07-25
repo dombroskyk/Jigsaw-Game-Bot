@@ -10,15 +10,15 @@ import { CommandDto } from 'models/commandDto';
 dotenv.config();
 
 //todo: democracy mode
-// MVP: todo: steam/epic integration
+// MVP: todo: steam/epic integration (must manually manage linking, Discord does not allow getting a users connections via bot)
 // -- suggest games from a collection of mentioned users
 // -- import games wizard
 // remove tag interaction
 // string constants to common file?
 // minimum permissions
-// ephemeral responses
 // mac support flag
 // edit game
+// Right click user action/commands
 const client = new Client({ intents: [GatewayIntentBits.GuildMembers, GatewayIntentBits.GuildMessageReactions, GatewayIntentBits.GuildMessages,
                                       GatewayIntentBits.GuildScheduledEvents, GatewayIntentBits.Guilds, GatewayIntentBits.MessageContent] });
 

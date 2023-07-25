@@ -13,7 +13,7 @@ export default {
   helpText: `${COMMAND_NAME} - ${COMMAND_DESCRIPTION}
   Args:
   - ${USER_ARG_KEY} (required): ${USER_DESCRIPTION}
-  - ${STEAM_ID_ARG_KEY} (required): ${STEAM_ID_DESCRIPTION}`,
+  - ${STEAM_ID_ARG_KEY}: ${STEAM_ID_DESCRIPTION}`,
 	data: new SlashCommandBuilder()
     .setName(COMMAND_NAME)
     .setDescription(COMMAND_DESCRIPTION)

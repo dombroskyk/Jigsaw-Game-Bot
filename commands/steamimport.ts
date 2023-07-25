@@ -87,7 +87,7 @@ export default {
 
       const dataForGame = steamGameDetailResponse.data[gameIdKey];
       if (!dataForGame || !dataForGame.data) {
-        //GRID, id 12750, is broken on steam
+        // GRID, id 12750, is broken on steam
         interaction.followUp({ content: `Unable to retrieve data for game id ${gameIdKey}, retrieve the details yourself with this link: https://store.steampowered.com/app/${gameIdKey}`, ephemeral: true});
         continue;
       }
@@ -97,9 +97,9 @@ export default {
 
       // begin wizard
       // assign steam info to existing game?
-      //request number of players, #1
+      // request number of players, #1
       let playerRange:number[] = [];
-      const sentPlayersMessage = await interaction.followUp(formatNewGameNumPlayersMessage(gameName, true));
+      const sentPlayersMessage = await interaction.followUp({ ...formatNewGameNumPlayersMessage(gameName, true), ephemeral: true });
 
       const sentPlayersMessageFilter = i => i.user.id === interaction.user.id;
       try {
@@ -110,7 +110,7 @@ export default {
         if (buttonId === "skipGame") {
           continue;
         } else if (buttonId === "end") {
-          sentPlayersMessage.reply({ content: `Steam import session aborted! Provide id '${gameId}' to the gameId option of steamimport to pickup where you left off.`, options: { flags: MessageFlags.Ephemeral }});
+          sentPlayersMessage.edit(`Steam import session aborted! Provide id '${gameId}' to the gameId option of steamimport to pickup where you left off.`);
           return;
         }
         const numPlayersClick = getNumPlayersFromId(buttonId);
@@ -132,7 +132,7 @@ export default {
         if (buttonId === "skipGame") {
           continue;
         } else if (buttonId === "end") {
-          sentPlayersMessage.reply({ content: `Steam import session aborted! Provide id '${gameId}' to the gameId option of steamimport to pickup where you left off.`, options: { flags: MessageFlags.Ephemeral }});
+          sentPlayersMessage.edit({ content: `Steam import session aborted! Provide id '${gameId}' to the gameId option of steamimport to pickup where you left off.`});
           return;
         }
 
@@ -155,7 +155,7 @@ export default {
       let tagsMessage:Message<boolean> | undefined;
       const tagResponseFilter = m => interaction.user.id === m.author.id;
       try {
-        const tagMessages = await interaction.channel.awaitMessages({ filter: tagResponseFilter, time: INPUT_TIMEOUT_MILLISECONDS });
+        const tagMessages = await interaction.channel.awaitMessages({ filter: tagResponseFilter, time: INPUT_TIMEOUT_MILLISECONDS, max: 1, errors: ['time'] });
         console.log(tagMessages);
         tagsMessage = tagMessages.first();
 

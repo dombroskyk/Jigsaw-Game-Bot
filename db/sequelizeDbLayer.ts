@@ -26,7 +26,7 @@ UserPlatformMapping.belongsToMany(Game, { through: 'Game_SteamUserPlatformMappin
 // sequelize.sync({alter: true});
 sequelize.sync();
 
-export async function insertGame(gameVals:Game, tags:Tag[]): Promise<Game> {
+export async function insertGame(gameVals: Game, tags: Tag[]): Promise<Game> {
 	const game = await gameVals.save();
 	await game.setTags(tags);
 	
@@ -81,20 +81,16 @@ export async function getGames(getGamesFilter?: GetGamesFilter): Promise<Game[]>
 	});
 }
 
-async function getGameById(id:number): Promise<Game> {
+export async function getGameById(id: number): Promise<Game> {
 	return await Game.findByPk(id, {include: Tag, rejectOnEmpty: true});
 }
 
-export async function getGamesByName(gameName:string): Promise<Game[]> {
+export async function getGamesByName(gameName: string): Promise<Game[]> {
 	return await Game.findAll({ where: { name: gameName }, include: Tag });
 }
 
-export async function deleteGame(game:Game): Promise<void> {
+export async function deleteGame(game: Game): Promise<void> {
 	await Game.destroy({ where: { id: game.id }});
-}
-
-function getFilterObject() {
-	return { games: [], tags: { yes: [], no: [] } };
 }
 
 export async function closeDb(): Promise<void> {
@@ -105,7 +101,7 @@ export async function getTags(): Promise<Tag[]> {
 	return await Tag.findAll();
 }
 
-export async function findOrCreateTags(tags:Tag[]): Promise<Tag[]> {
+export async function findOrCreateTags(tags: Tag[]): Promise<Tag[]> {
 	let actualTags:Tag[] = [];
 	for(const tag of tags) {
 		let actualTag = await Tag.findOne({ where: { name: tag.name }});

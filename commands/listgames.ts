@@ -24,7 +24,8 @@ export default {
       return;
     }
 
-    let buffer = `Listing Games (${games.length}):`;
+    await interaction.reply({ content: `Listing Games (${games.length}):`, ephemeral: true });
+    let buffer = "";
     for (const game of games) {
       const gameString = game.toString();
       if (gameString.length + buffer.length + 2 >= MAX_DISCORD_MESSAGE_LENGTH) {

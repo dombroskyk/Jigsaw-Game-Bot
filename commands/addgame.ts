@@ -100,7 +100,7 @@ export default {
       for (let i = 1; i <= 10; i++) {
         const tagName = interaction.options.getString(`${TAG_ARG_KEY}${i}`);
         if (tagName && !tags.some(existingTag => existingTag.name.toLowerCase() === tagName.toLowerCase())) {
-          const tag = Tag.build({ name: tagName })
+          const tag = Tag.build({ name: tagName });
           tags.push(tag);
         }
       }
