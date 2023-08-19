@@ -6,6 +6,7 @@ import { getTagAndIntentionFromId } from "../textHelpers/textParsing";
 import { Game } from "models/models";
 import { ChatInputCommandInteraction, ComponentType, InteractionReplyOptions, Message, MessageComponentInteraction, SlashCommandBuilder } from "discord.js";
 import { GetGamesFilter } from "../models/getGamesFilter";
+import { Command, ICommand } from "../types/command";
 
 const COMMAND_NAME = path.basename(__filename, ".ts");
 const COMMAND_DESCRIPTION = "Allow Jigsaw to suggest a game for you to play, randomly, or by narrowing down results.";
@@ -29,24 +30,25 @@ const respondToMessage = async (replyTo: MessageComponentInteraction | ChatInput
   return sentMessage;
 }
 
-export default {
-  helpText: `${COMMAND_NAME} - ${COMMAND_DESCRIPTION}
+class PlayAGameCommand extends Command implements ICommand {
+  helpText: string = `${COMMAND_NAME} - ${COMMAND_DESCRIPTION}
   Args:
-  - ${NUM_PLAYERS_ARG_KEY} (required): ${NUM_PLAYERS_DESCRIPTION}`,
-  data: new SlashCommandBuilder()
+  - ${NUM_PLAYERS_ARG_KEY} (required): ${NUM_PLAYERS_DESCRIPTION}`;
+
+  data: Omit<SlashCommandBuilder, "addSubcommand" | "addSubcommandGroup"> = new SlashCommandBuilder()
     .setName(COMMAND_NAME)
     .setDescription(COMMAND_DESCRIPTION)
     .addIntegerOption(option =>
       option.setName(NUM_PLAYERS_ARG_KEY)
         .setDescription(NUM_PLAYERS_DESCRIPTION)
-        .setRequired(true)),
+        .setRequired(true));
     // TODO: 
     // .addBooleanOption(option =>
     //   option.setName(ONLY_OWNED_GAMES_ARG_KEY)
     //     .setDescription("Should Jigsaw only suggest games owned by all?")
     //     .setRequired(false)),
 
-  async execute(interaction: ChatInputCommandInteraction) {
+  execute = async (interaction: ChatInputCommandInteraction) => {
     const numPlayers = interaction.options.getInteger(NUM_PLAYERS_ARG_KEY, true);
     //TODO: const onlyOwnedGames = interaction.options.getBoolean(ONLY_OWNED_GAMES_ARG_KEY);
 
@@ -86,3 +88,5 @@ export default {
     return;
   }
 }
+
+export default new PlayAGameCommand();

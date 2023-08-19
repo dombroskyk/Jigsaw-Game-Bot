@@ -86,7 +86,7 @@ export async function getGameById(id: number): Promise<Game> {
 }
 
 export async function getGamesByName(gameName: string): Promise<Game[]> {
-	return await Game.findAll({ where: { name: gameName }, include: Tag });
+	return await Game.findAll({ where: { name: { [Op.like]: gameName } }, include: Tag });
 }
 
 export async function deleteGame(game: Game): Promise<void> {
@@ -104,7 +104,7 @@ export async function getTags(): Promise<Tag[]> {
 export async function findOrCreateTags(tags: Tag[]): Promise<Tag[]> {
 	let actualTags:Tag[] = [];
 	for(const tag of tags) {
-		let actualTag = await Tag.findOne({ where: { name: tag.name }});
+		let actualTag = await Tag.findOne({ where: { name: { [Op.like]: tag.name } } });
 		if (actualTag === null)
 			actualTag = await tag.save();
 

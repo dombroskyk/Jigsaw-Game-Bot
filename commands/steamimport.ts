@@ -7,6 +7,7 @@ import { handleSteamImportCollectorError } from "../errorHandling/replyTimeout";
 import { ChatInputCommandInteraction, Message, MessageFlags, SlashCommandBuilder } from "discord.js";
 import { insertGame } from "../db/sequelizeDbLayer";
 import { Game, Tag, UserPlatformMapping } from "../models/models";
+import { Command, ICommand } from "../types/command";
 
 const COMMAND_NAME = path.basename(__filename, ".ts");
 const COMMAND_DESCRIPTION = "Help Jigsaw learn more games from a Steam library!";
@@ -17,16 +18,14 @@ const STEAM_GAME_ID_DESCRIPTION = "A Steam game id to fast forward to in the imp
 
 const INPUT_TIMEOUT_MILLISECONDS = 45 * 1000;
 
-
-
-export default {
-  helpText: `${COMMAND_NAME} - ${COMMAND_DESCRIPTION}
+class SteamImportCommand extends Command implements ICommand {
+  helpText: string = `${COMMAND_NAME} - ${COMMAND_DESCRIPTION}
   Args:
   ${USER_ARG_KEY} (required): ${USER_DESCRIPTION}
-  ${STEAM_GAME_ID_KEY}: ${STEAM_GAME_ID_DESCRIPTION}`,
+  ${STEAM_GAME_ID_KEY}: ${STEAM_GAME_ID_DESCRIPTION}`;
 
 
-  data: new SlashCommandBuilder()
+  data: Omit<SlashCommandBuilder, "addSubcommand" | "addSubcommandGroup"> = new SlashCommandBuilder()
     .setName(COMMAND_NAME)
     .setDescription(COMMAND_DESCRIPTION)
     .addUserOption(option =>
@@ -35,10 +34,10 @@ export default {
         .setRequired(true))
     .addIntegerOption(option =>
       option.setName(STEAM_GAME_ID_KEY)
-        .setDescription(STEAM_GAME_ID_DESCRIPTION)),
+        .setDescription(STEAM_GAME_ID_DESCRIPTION));
 
 
-  async execute(interaction: ChatInputCommandInteraction) {
+  execute = async (interaction: ChatInputCommandInteraction) => {
     if (interaction === null || interaction.channel === null) {
       throw Error("literally impossible");
     }
@@ -196,4 +195,6 @@ export default {
       importedSteamGames.push(game);
     };
   }
-};
+}
+
+export default new SteamImportCommand();

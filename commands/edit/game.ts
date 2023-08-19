@@ -1,7 +1,7 @@
 import path from "node:path";
-import { Game, Tag } from "../models/models";
-import { findOrCreateTags, getGameById, getGames, getGamesByName, insertGame } from "../db/sequelizeDbLayer";
-import { APIActionRowComponent, APIApplicationCommandOptionChoice, APITextInputComponent, ActionRowBuilder, ChatInputCommandInteraction, InteractionCollector, ModalActionRowComponentBuilder, ModalBuilder, SlashCommandBuilder, SlashCommandSubcommandsOnlyBuilder, TextInputBuilder, TextInputStyle } from "discord.js";
+import { Game, Tag } from "../../models/models";
+import { findOrCreateTags, getGameById, getGames, getGamesByName, insertGame } from "../../db/sequelizeDbLayer";
+import { APIActionRowComponent, APIApplicationCommandOptionChoice, APITextInputComponent, ActionRowBuilder, ChatInputCommandInteraction, InteractionCollector, ModalActionRowComponentBuilder, ModalBuilder, SlashCommandBuilder, SlashCommandSubcommandBuilder, SlashCommandSubcommandsOnlyBuilder, TextInputBuilder, TextInputStyle } from "discord.js";
 
 const GAME_SUBCOMMAND_NAME = "game";
 
@@ -38,27 +38,23 @@ export default {
   - ${TAG_ARG_KEY}1-10: Describe the game being added with one or more tags`,
 
   
-  data: new SlashCommandBuilder()
+  data: new SlashCommandSubcommandBuilder()
     .setName(COMMAND_NAME)
     .setDescription(COMMAND_DESCRIPTION)
-    .addSubcommand(subCommand => 
-      subCommand.setName(GAME_SUBCOMMAND_NAME)
-        .setDescription("Edit attributes for a game in Jigsaw's library")
-        .addStringOption(option => option.setName(GAME_NAME_ARG_KEY)
-            .setDescription("Edit the game's name")
-            .setRequired(true)
-        )
-    )
-    .addSubcommandGroup(group =>
-      group.setName("user_platforms")
-        .setDescription("Edit a User's Platform Ids")
-        .addSubcommand(subCommand =>
-          subCommand.setName("steam_id")
-            .setDescription("Edit a User's Steam Id in case they changed it in Steam")
-            .addUserOption(option => option.setName("user").setDescription("Discord user to edit the Steam Id for"))
-            .addStringOption(option => option.setName("steam_id").setDescription("New Steam Id to assign for the Discord user"))
-        )
+    .addStringOption(option => option.setName(GAME_NAME_ARG_KEY)
+        .setDescription("Game to edit")
+        .setRequired(true)
     ),
+    // .addSubcommandGroup(group =>
+    //   group.setName("user_platforms")
+    //     .setDescription("Edit a User's Platform Ids")
+    //     .addSubcommand(subCommand =>
+    //       subCommand.setName("steam_id")
+    //         .setDescription("Edit a User's Steam Id in case they changed it in Steam")
+    //         .addUserOption(option => option.setName("user").setDescription("Discord user to edit the Steam Id for"))
+    //         .addStringOption(option => option.setName("steam_id").setDescription("New Steam Id to assign for the Discord user"))
+    //     )
+    // ),
 
 
   async execute(interaction: ChatInputCommandInteraction) {

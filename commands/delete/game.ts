@@ -1,6 +1,6 @@
 import path from "node:path";
-import { deleteGame, getGamesByName } from "../db/sequelizeDbLayer";
-import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
+import { deleteGame, getGamesByName } from "../../db/sequelizeDbLayer";
+import { ChatInputCommandInteraction, SlashCommandSubcommandBuilder } from "discord.js";
 
 const COMMAND_NAME = path.basename(__filename, ".ts");
 const COMMAND_DESCRIPTION = "Delete a game known by Jigsaw";
@@ -13,7 +13,7 @@ export default {
   - ${GAME_NAME_ARG_KEY} (required): ${GAME_NAME_DESCRIPTION}`,
 
 
-  data: new SlashCommandBuilder()
+  data: new SlashCommandSubcommandBuilder()
     .setName(COMMAND_NAME)
     .setDescription(COMMAND_DESCRIPTION)
     .addStringOption(option =>

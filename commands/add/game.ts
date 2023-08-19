@@ -1,7 +1,7 @@
 import path from "node:path";
-import { Game, Tag } from "../models/models";
-import { findOrCreateTags, getGames, insertGame } from "../db/sequelizeDbLayer";
-import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
+import { Game, Tag } from "../../models/models";
+import { findOrCreateTags, getGames, insertGame } from "../../db/sequelizeDbLayer";
+import { ChatInputCommandInteraction, SlashCommandSubcommandBuilder } from "discord.js";
 
 const COMMAND_NAME = path.basename(__filename, ".ts");
 const COMMAND_DESCRIPTION = "Manually add a game to Jigsaw's library.";
@@ -22,7 +22,7 @@ export default {
   - ${TAG_ARG_KEY}1-10: Describe the game being added with one or more tags`,
 
   
-  data: new SlashCommandBuilder()
+  data: new SlashCommandSubcommandBuilder()
     .setName(COMMAND_NAME)
     .setDescription(COMMAND_DESCRIPTION)
     .addStringOption(option =>
@@ -90,10 +90,6 @@ export default {
         const newLowerPlayerBound = upperPlayerBound;
         upperPlayerBound = lowerPlayerBound;
         lowerPlayerBound = newLowerPlayerBound;
-      }
-
-      if (upperPlayerBound > 10) {
-        upperPlayerBound = 10;
       }
 
       let tags:Tag[] = [];

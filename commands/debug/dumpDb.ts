@@ -1,9 +1,9 @@
 import path from "node:path";
-import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
+import { ChatInputCommandInteraction, SlashCommandBuilder, SlashCommandSubcommandBuilder } from "discord.js";
 import { dumpDb } from "../../db/sequelizeDbLayer";
 
 export default {
-  data: new SlashCommandBuilder()
+  data: new SlashCommandSubcommandBuilder()
     .setName(path.basename(__filename, ".ts").toLocaleLowerCase())
     .setDescription("ADMIN - Examine database contents"),
 

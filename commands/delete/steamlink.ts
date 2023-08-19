@@ -1,6 +1,6 @@
 import path from "node:path";
-import { deleteSteamUserPlatformMappingByDiscordId } from '../db/sequelizeDbLayer';
-import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
+import { deleteSteamUserPlatformMappingByDiscordId } from '../../db/sequelizeDbLayer';
+import { ChatInputCommandInteraction, SlashCommandSubcommandBuilder } from "discord.js";
 
 const COMMAND_NAME = path.basename(__filename, ".ts");
 const USER_ARG_KEY = "user";
@@ -11,7 +11,9 @@ export default {
     helpText: `${COMMAND_NAME} - ${COMMAND_DESCRIPTION}
     Args:
     - ${USER_ARG_KEY} (required): ${USER_ARG_DESCRIPTION}`,
-    data: new SlashCommandBuilder()
+
+
+    data: new SlashCommandSubcommandBuilder()
         .setName(COMMAND_NAME)
         .setDescription(COMMAND_DESCRIPTION)
         .addUserOption(option =>
@@ -19,6 +21,7 @@ export default {
                 .setDescription(USER_ARG_DESCRIPTION)
                 .setRequired(true)),
   
+                
     async execute(interaction: ChatInputCommandInteraction) {
         const receivedUser = interaction.options.getUser(USER_ARG_KEY, true);
         await deleteSteamUserPlatformMappingByDiscordId(receivedUser.id);

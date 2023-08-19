@@ -2,10 +2,10 @@ import * as dotenv from 'dotenv';
 // import 'source-map-support/register';
 import { Client, GatewayIntentBits, Events, Collection } from "discord.js";
 import { setInteraction, startMessageContext, setClient } from "./messageContextHelper";
-import { addCommandsFromDir } from './commandRegistrationHelpers';
 import { settings } from './settings';
 import { closeDb } from './db/sequelizeDbLayer';
-import { CommandDto } from 'models/commandDto';
+import { CommandDictionary } from './types/commandDictionary';
+import { buildCommandDictionary } from './commandRegistrationHelpers';
 //todo: is there someway to DI this or pass it around?
 dotenv.config();
 
@@ -17,17 +17,13 @@ dotenv.config();
 // string constants to common file?
 // minimum permissions
 // mac support flag
-// edit game
 // Right click user action/commands
+//scrub client id/secret from old history or generate a new one
 const client = new Client({ intents: [GatewayIntentBits.GuildMembers, GatewayIntentBits.GuildMessageReactions, GatewayIntentBits.GuildMessages,
                                       GatewayIntentBits.GuildScheduledEvents, GatewayIntentBits.Guilds, GatewayIntentBits.MessageContent] });
 
-const setCommandsCallback = (command:CommandDto) => {
-  commands.set(command.data.name, command);
-};
-let commands = new Collection<string, CommandDto>();
-addCommandsFromDir(setCommandsCallback);
-
+const commands: CommandDictionary = buildCommandDictionary();
+console.log(commands);
 
 client.once(Events.ClientReady, () => {
   console.log(`Logged in as ${client.user!.tag}`);
@@ -56,7 +52,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
   setInteraction(interaction);
 
   if (interaction.isCommand()) {
-    const command = commands.get(interaction.commandName);
+    const command = commands[interaction.commandName];
     if (!command) return;
 
     try {

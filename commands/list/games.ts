@@ -1,6 +1,6 @@
 import path from "node:path";
-import { getGames } from "../db/sequelizeDbLayer";
-import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
+import { getGames } from "../../db/sequelizeDbLayer";
+import { ChatInputCommandInteraction, SlashCommandBuilder, SlashCommandSubcommandBuilder } from "discord.js";
 
 const MAX_DISCORD_MESSAGE_LENGTH = 2000;
 
@@ -8,11 +8,11 @@ const COMMAND_NAME = path.basename(__filename, ".ts");
 const COMMAND_DESCRIPTION = "List the games registered with Jigsaw.";
 
 export default {
-  helpText: `${COMMAND_NAME} - ${COMMAND_DESCRIPTION}
+  helpText: `${path.basename(__dirname)} ${COMMAND_NAME} - ${COMMAND_DESCRIPTION}
   Args: None.`,
 
 
-  data: new SlashCommandBuilder()
+  data: new SlashCommandSubcommandBuilder()
     .setName(COMMAND_NAME)
     .setDescription(COMMAND_DESCRIPTION),
     

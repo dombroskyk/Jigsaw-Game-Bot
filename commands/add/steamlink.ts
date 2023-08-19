@@ -1,6 +1,6 @@
 import path from "node:path";
-import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
-import { insertSteamUserPlatformMapping } from "../db/sequelizeDbLayer";
+import { ChatInputCommandInteraction, SlashCommandSubcommandBuilder } from "discord.js";
+import { insertSteamUserPlatformMapping } from "../../db/sequelizeDbLayer";
 
 const COMMAND_NAME = path.basename(__filename, ".ts");
 const COMMAND_DESCRIPTION = "Sets a Steam Id for a Discord user for use with other commands.";
@@ -14,7 +14,9 @@ export default {
   Args:
   - ${USER_ARG_KEY} (required): ${USER_DESCRIPTION}
   - ${STEAM_ID_ARG_KEY}: ${STEAM_ID_DESCRIPTION}`,
-	data: new SlashCommandBuilder()
+
+
+	data: new SlashCommandSubcommandBuilder()
     .setName(COMMAND_NAME)
     .setDescription(COMMAND_DESCRIPTION)
     .addUserOption(option =>
@@ -26,6 +28,7 @@ export default {
             .setDescription(STEAM_ID_DESCRIPTION)
             .setRequired(true)),
   
+
 	async execute(interaction: ChatInputCommandInteraction) {
     const receivedUser = interaction.options.getUser(USER_ARG_KEY, true);
     const receivedSteamId = interaction.options.getString(STEAM_ID_ARG_KEY, true);

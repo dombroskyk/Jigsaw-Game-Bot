@@ -1,27 +1,27 @@
 import fs from "node:fs";
 import path from "node:path";
 import { APIApplicationCommandOptionChoice, ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
-import { CommandDto } from "models/commandDto";
+import { Command, ICommand } from "../types/command";
 
 const COMMAND_NAME_ARG_KEY = "command_name";
 const BASE_HELP_TEXT = "Jigsaw Game Bot is here to help you choose a game to play; either alone or with friends!";
 
 const commandsPath = path.join(__dirname);
 const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.ts'));
-let commandDtos: Map<string, CommandDto> = new Map<string, CommandDto>();
+let helpTextMapping: Map<string, string> = new Map<string, string>();
 let choices: APIApplicationCommandOptionChoice<string>[] = [];
 for (const commandFile of commandFiles) {
   const commandFileName = path.parse(commandFile).name
-  commandDtos.set(commandFileName, require(path.join(commandsPath, commandFile)).default);
+  helpTextMapping.set(commandFileName, require(path.join(commandsPath, commandFile)).default);
 
   choices.push({ name: commandFileName, value: commandFileName });
 }
 
-export default {
-  helpText: BASE_HELP_TEXT,
+class HelpCommand extends Command implements ICommand {
+  helpText: string = BASE_HELP_TEXT;
 
   
-  data: new SlashCommandBuilder()
+  data: Omit<SlashCommandBuilder, "addSubcommand" | "addSubcommandGroup"> = new SlashCommandBuilder()
     .setName(path.basename(__filename, ".ts"))
     .setDescription("Display helpful info. Supply a command name to get more info on that specific command.")
     .addStringOption(option =>
@@ -29,10 +29,10 @@ export default {
         .setDescription("Command to get help with")
         .addChoices(
           ...choices
-        )),
+        ));
 
 
-  async execute(interaction: ChatInputCommandInteraction) {
+  execute = async (interaction: ChatInputCommandInteraction) => {
     const commandName = interaction.options.getString(COMMAND_NAME_ARG_KEY);
     let helpText = "";
 
@@ -43,7 +43,7 @@ export default {
         helpText += `\r\n ${fileName}`;
       }
     } else {
-      const commandHelpText = commandDtos.get(commandName)?.helpText;
+      const commandHelpText = helpTextMapping.get(commandName);
       if (typeof commandHelpText !== "undefined" && commandHelpText !== "") {
         helpText = commandHelpText;
       }
@@ -51,4 +51,6 @@ export default {
 
     await interaction.reply({ content: helpText, ephemeral: true });
   }
-};
+}
+
+export default new HelpCommand();
