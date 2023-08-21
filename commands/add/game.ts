@@ -1,136 +1,84 @@
 import path from "node:path";
-import { Game, Tag } from "../../models/models";
-import { findOrCreateTags, getGames, insertGame } from "../../db/sequelizeDbLayer";
+import { Game } from "../../models/models";
+import { getGames, insertGame } from "../../db/sequelizeDbLayer";
 import { ChatInputCommandInteraction, SlashCommandSubcommandBuilder } from "discord.js";
+import { buildGameModal, handleGameModalInteraction } from "../../shared/gameModalHelpers";
 
 const COMMAND_NAME = path.basename(__filename, ".ts");
 const COMMAND_DESCRIPTION = "Manually add a game to Jigsaw's library.";
-const GAME_NAME_ARG_KEY = "game_name";
-const GAME_NAME_DESCRIPTION = "Name of game to add";
-const LOWER_PLAYER_BOUND_ARG_KEY = "lower_player_bound";
-const LOWER_PLAYER_BOUND_DESCRIPTION = "Player range - Lower bound";
-const UPPER_PLAYER_BOUND_ARG_KEY = "upper_player_bound";
-const UPPER_PLAYER_BOUND_DESCRIPTION = "Player range - Upper bound";
-const TAG_ARG_KEY = "tag";
+const ADD_GAME_MODAL_ID = "addGameModal";
 
 export default {
   helpText: `${COMMAND_NAME} - ${COMMAND_DESCRIPTION} Good for games that aren't on major platforms.
-  Args:
-  - ${GAME_NAME_ARG_KEY} (required): ${GAME_NAME_DESCRIPTION}
-  - ${LOWER_PLAYER_BOUND_ARG_KEY} (required): ${LOWER_PLAYER_BOUND_DESCRIPTION}
-  - ${UPPER_PLAYER_BOUND_ARG_KEY} (required): ${UPPER_PLAYER_BOUND_DESCRIPTION}
-  - ${TAG_ARG_KEY}1-10: Describe the game being added with one or more tags`,
+  Args: None`,
 
   
   data: new SlashCommandSubcommandBuilder()
     .setName(COMMAND_NAME)
-    .setDescription(COMMAND_DESCRIPTION)
-    .addStringOption(option =>
-      option.setName(GAME_NAME_ARG_KEY)
-        .setDescription(GAME_NAME_DESCRIPTION)
-        .setRequired(true))
-    .addIntegerOption(option =>
-      option.setName(LOWER_PLAYER_BOUND_ARG_KEY)
-        .setDescription(LOWER_PLAYER_BOUND_DESCRIPTION)
-        .setRequired(true))
-    .addIntegerOption(option =>
-      option.setName(UPPER_PLAYER_BOUND_ARG_KEY)
-        .setDescription(UPPER_PLAYER_BOUND_DESCRIPTION)
-        .setRequired(true))
-    .addStringOption(option =>
-      option.setName(`${TAG_ARG_KEY}1`)
-        .setDescription("First tag (genre/style)")
-        .setRequired(false))
-    .addStringOption(option =>
-      option.setName(`${TAG_ARG_KEY}2`)
-        .setDescription("Second tag (genre/style)")
-        .setRequired(false))
-    .addStringOption(option =>
-      option.setName(`${TAG_ARG_KEY}3`)
-        .setDescription("Third tag (genre/style)")
-        .setRequired(false))
-    .addStringOption(option =>
-      option.setName(`${TAG_ARG_KEY}4`)
-        .setDescription("Fourth tag (genre/style)")
-        .setRequired(false))
-    .addStringOption(option =>
-      option.setName(`${TAG_ARG_KEY}5`)
-        .setDescription("Fifth tag (genre/style)")
-        .setRequired(false))
-    .addStringOption(option =>
-      option.setName(`${TAG_ARG_KEY}6`)
-        .setDescription("Sixth tag (genre/style)")
-        .setRequired(false))
-    .addStringOption(option =>
-      option.setName(`${TAG_ARG_KEY}7`)
-        .setDescription("Seventh tag (genre/style)")
-        .setRequired(false))
-    .addStringOption(option =>
-      option.setName(`${TAG_ARG_KEY}8`)
-        .setDescription("Eighth tag (genre/style)")
-        .setRequired(false))
-    .addStringOption(option =>
-      option.setName(`${TAG_ARG_KEY}9`)
-        .setDescription("Ninth tag (genre/style)")
-        .setRequired(false))
-    .addStringOption(option =>
-      option.setName(`${TAG_ARG_KEY}10`)
-        .setDescription("Tenth tag (genre/style)")
-        .setRequired(false)),
+    .setDescription(COMMAND_DESCRIPTION),
 
 
   async execute(interaction: ChatInputCommandInteraction) {
     try {
-      await interaction.deferReply({ ephemeral: true });
-      const gameName = interaction.options.getString(GAME_NAME_ARG_KEY, true);
+      const modal = buildGameModal(ADD_GAME_MODAL_ID);
+      await interaction.showModal(modal);
+      const filter = (filteredInteraction) => filteredInteraction.customId === ADD_GAME_MODAL_ID;
+      const modalInteraction = await interaction.awaitModalSubmit({ filter, time: 4 * 1_000});
 
-      let lowerPlayerBound = interaction.options.getInteger(LOWER_PLAYER_BOUND_ARG_KEY, true);
-      let upperPlayerBound = interaction.options.getInteger(UPPER_PLAYER_BOUND_ARG_KEY, true);
-      if (lowerPlayerBound > upperPlayerBound) {
-        const newLowerPlayerBound = upperPlayerBound;
-        upperPlayerBound = lowerPlayerBound;
-        lowerPlayerBound = newLowerPlayerBound;
+      let replyContent: string[] = [];
+      const modalResponse = await handleGameModalInteraction(modalInteraction);
+      if (modalResponse.lowerPlayerBound == null || isNaN(modalResponse.lowerPlayerBound)) {
+        replyContent.push("Lower Player Bound must be an integer.");
+      }
+      if (modalResponse.upperPlayerBound == null || isNaN(modalResponse.upperPlayerBound)) {
+        replyContent.push("Upper Player Bound must be an integer if it is provided.");
+      }
+      if (modalResponse.lowerPlayerBound !== null && 
+          modalResponse.upperPlayerBound !== null && 
+          modalResponse.lowerPlayerBound > modalResponse.upperPlayerBound) {
+        const newLowerPlayerBound = modalResponse.upperPlayerBound;
+        modalResponse.upperPlayerBound = modalResponse.lowerPlayerBound;
+        modalResponse.lowerPlayerBound = newLowerPlayerBound;
       }
 
-      let tags:Tag[] = [];
-      for (let i = 1; i <= 10; i++) {
-        const tagName = interaction.options.getString(`${TAG_ARG_KEY}${i}`);
-        if (tagName && !tags.some(existingTag => existingTag.name.toLowerCase() === tagName.toLowerCase())) {
-          const tag = Tag.build({ name: tagName });
-          tags.push(tag);
-        }
-      }
-
-      tags = await findOrCreateTags(tags);
-
-      const gameCreationVals:Game = Game.build({
-        name: gameName,
-        lowerPlayerBound: lowerPlayerBound,
-        upperPlayerBound: upperPlayerBound
+      const gameCreationVals: Game = Game.build({
+        name: modalResponse.name,
+        lowerPlayerBound: modalResponse.lowerPlayerBound!.valueOf(),
+        upperPlayerBound: modalResponse.upperPlayerBound,
       });
 
-      let game:Game;
+      let game: Game;
       const games = await getGames();
-      if (!games.some(game => game.name.toLowerCase() === gameName.toLowerCase())) {
+      if (!games.some(game => game.name.toLowerCase() === gameCreationVals.name.toLowerCase())) {
         try {
-          game = await insertGame(gameCreationVals, tags);
+          game = await insertGame(gameCreationVals, modalResponse.tags);
         } catch (error) {
           console.log(error);
           if (error.name === "SequelizeUniqueConstraintError") {
-            return interaction.editReply(`Game ${gameName} already exists.`);
+            await modalInteraction.reply({ content: `Game ${gameCreationVals.name} already exists.`, ephemeral: true});
+            return;
           }
 
-          return interaction.editReply(`Something went wrong with adding game ${gameName}.`);
+          await modalInteraction.reply({ content: `Something went wrong with adding game ${gameCreationVals.name}.`, ephemeral: true });
+          return;
         }
       } else {
-        interaction.editReply(`${gameName} already exists, delete the existing entry before adding a new instance of it`);
+        await modalInteraction.reply({ content: `${gameCreationVals.name} already exists, delete the existing entry before adding a new instance of it`, ephemeral: true });
         return;
       }
 
-      interaction.editReply(`Successfully saved ${game.toString()}`);
-    } catch (exception) {
-      console.log(exception);
-      interaction.editReply(`Failed to add game due to encountered error: ${exception}`);
+      replyContent = [`Successfully saved ${game.toString()}`];
+      
+      await modalInteraction.reply({ content: replyContent.join('\r\n'), ephemeral: true });
+    } catch (ex) {
+      let message = String(ex);
+      if (ex instanceof Error) message = ex.message;
+
+      if (message.toLocaleLowerCase().indexOf("time") !== -1) {
+        message = `Timed out waiting for modal.\r\nIf this was unintentional please start over again.`;
+      }
+      
+      await interaction.followUp({ content: message, ephemeral: true });
     }
   }
 }
