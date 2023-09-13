@@ -4,7 +4,7 @@ import { findOrCreateTags, getImportedSteamGames, getSteamUserPlatformMappingByD
 import { formatNewGameNumPlayersMessage } from "../messageFormatter";
 import { getTagsFromMessage, getNumPlayersFromId } from "../textHelpers/textParsing";
 import { handleSteamImportCollectorError } from "../errorHandling/replyTimeout";
-import { ChatInputCommandInteraction, Message, MessageFlags, SlashCommandBuilder } from "discord.js";
+import { ChatInputCommandInteraction, Message, MessageFlags, MessagePayload, MessageReplyOptions, SlashCommandBuilder } from "discord.js";
 import { insertGame } from "../db/sequelizeDbLayer";
 import { Game, Tag, UserPlatformMapping } from "../models/models";
 import { Command, ICommand } from "../types/command";
@@ -15,6 +15,8 @@ const USER_ARG_KEY = "user";
 const USER_DESCRIPTION = "User's Steam library to import";
 const STEAM_GAME_ID_KEY = "steam_id";
 const STEAM_GAME_ID_DESCRIPTION = "A Steam game id to fast forward to in the import process";
+const BASIC_IMPORT_KEY = "basic_import";
+const BASIC_IMPORT_DESCRIPTION = "Quickly add all the games in a Steam library by assigning default values. Games can be edited later."
 
 const INPUT_TIMEOUT_MILLISECONDS = 45 * 1000;
 
@@ -22,7 +24,8 @@ class SteamImportCommand extends Command implements ICommand {
   helpText: string = `${COMMAND_NAME} - ${COMMAND_DESCRIPTION}
   Args:
   ${USER_ARG_KEY} (required): ${USER_DESCRIPTION}
-  ${STEAM_GAME_ID_KEY}: ${STEAM_GAME_ID_DESCRIPTION}`;
+  ${STEAM_GAME_ID_KEY}: ${STEAM_GAME_ID_DESCRIPTION}
+  ${BASIC_IMPORT_KEY}: ${BASIC_IMPORT_DESCRIPTION}`;
 
 
   data: Omit<SlashCommandBuilder, "addSubcommand" | "addSubcommandGroup"> = new SlashCommandBuilder()
@@ -34,7 +37,10 @@ class SteamImportCommand extends Command implements ICommand {
         .setRequired(true))
     .addIntegerOption(option =>
       option.setName(STEAM_GAME_ID_KEY)
-        .setDescription(STEAM_GAME_ID_DESCRIPTION));
+        .setDescription(STEAM_GAME_ID_DESCRIPTION))
+    .addBooleanOption(option =>
+      option.setName(BASIC_IMPORT_KEY)
+        .setDescription(BASIC_IMPORT_DESCRIPTION));
 
 
   execute = async (interaction: ChatInputCommandInteraction) => {
@@ -44,6 +50,7 @@ class SteamImportCommand extends Command implements ICommand {
 
     const user = interaction.options.getUser(USER_ARG_KEY, true);
     let checkpointGameId = interaction.options.getInteger(STEAM_GAME_ID_KEY);
+    const basicImportFlag = interaction.options.getBoolean(BASIC_IMPORT_KEY);
 
     let steamUserPlatformMapping: UserPlatformMapping;
     try {
@@ -59,7 +66,7 @@ class SteamImportCommand extends Command implements ICommand {
       .get(`http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key=${process.env.STEAM_API_KEY}&steamid=${steamUserPlatformMapping.steamId}&format=json`);
 
     const steamOwnedGameIds = ownedGamesResponse.data.response.games.map(game => game.appid);
-    const importedSteamGames:Game[] = await getImportedSteamGames();
+    const importedSteamGames: Game[] = await getImportedSteamGames();
     for (const gameId of steamOwnedGameIds) {
 
       if (checkpointGameId !== null) {
@@ -81,9 +88,7 @@ class SteamImportCommand extends Command implements ICommand {
       }
 
       const steamGameDetailResponse = await axios.get(`https://store.steampowered.com/api/appdetails?key=${process.env.STEAM_API_KEY}&appids=${gameId}`);
-
       const gameIdKey = Object.keys(steamGameDetailResponse.data)[0];
-
       const dataForGame = steamGameDetailResponse.data[gameIdKey];
       if (!dataForGame || !dataForGame.data) {
         // GRID, id 12750, is broken on steam
@@ -97,99 +102,109 @@ class SteamImportCommand extends Command implements ICommand {
       // begin wizard
       // assign steam info to existing game?
       // request number of players, #1
-      let playerRange:number[] = [];
-      const sentPlayersMessage = await interaction.followUp({ ...formatNewGameNumPlayersMessage(gameName, true), ephemeral: true });
-
-      const sentPlayersMessageFilter = i => i.user.id === interaction.user.id;
-      try {
-        const firstPlayerRangeButtonClicked = await sentPlayersMessage.awaitMessageComponent({ filter: sentPlayersMessageFilter, time: INPUT_TIMEOUT_MILLISECONDS });
-        firstPlayerRangeButtonClicked.deferUpdate();
-
-        const buttonId = firstPlayerRangeButtonClicked.customId;
-        if (buttonId === "skipGame") {
-          continue;
-        } else if (buttonId === "end") {
-          sentPlayersMessage.edit(`Steam import session aborted! Provide id '${gameId}' to the gameId option of steamimport to pickup where you left off.`);
-          return;
-        }
-        const numPlayersClick = getNumPlayersFromId(buttonId);
-        playerRange.push(numPlayersClick);
-
-        await sentPlayersMessage.edit(formatNewGameNumPlayersMessage(gameName, true, playerRange));
-
-      } catch (ex) {
-        handleSteamImportCollectorError(ex, sentPlayersMessage, gameId);
-        return;
-      }
-
-      //request number of players, #2
-      try {
-        const secondPlayerRangeButtonClicked = await sentPlayersMessage.awaitMessageComponent({ filter: sentPlayersMessageFilter, time: INPUT_TIMEOUT_MILLISECONDS });
-        secondPlayerRangeButtonClicked.deferUpdate();
-
-        const buttonId = secondPlayerRangeButtonClicked.customId;
-        if (buttonId === "skipGame") {
-          continue;
-        } else if (buttonId === "end") {
-          sentPlayersMessage.edit({ content: `Steam import session aborted! Provide id '${gameId}' to the gameId option of steamimport to pickup where you left off.`});
-          return;
-        }
-
-        const numPlayersClick = getNumPlayersFromId(buttonId);
-        playerRange.push(numPlayersClick);
-        playerRange = playerRange.sort((a, b) => a - b);
-        await sentPlayersMessage.edit(formatNewGameNumPlayersMessage(gameName, true, playerRange));
-      } catch (ex) {
-        handleSteamImportCollectorError(ex, sentPlayersMessage, gameId);
-        return;
-      }
-
-      const lowerPlayerBound = playerRange[0];
-      const upperPlayerBound = playerRange[1];
-
-      //tags
-      const tagsRequestMessage = await sentPlayersMessage.reply({ content: `'${gameName}' player range ${lowerPlayerBound} - ${upperPlayerBound} entered. What tags should be added to the Steam tags (${steamProvidedGameTags.join(', ')})? ex: example1, example2, etc. Or, type 'None' or 'Cancel'`, options: { flags: MessageFlags.Ephemeral }});
-
-      let tags:Tag[] = [];
-      let tagsMessage:Message<boolean> | undefined;
-      const tagResponseFilter = m => interaction.user.id === m.author.id;
-      try {
-        const tagMessages = await interaction.channel.awaitMessages({ filter: tagResponseFilter, time: INPUT_TIMEOUT_MILLISECONDS, max: 1, errors: ['time'] });
-        console.log(tagMessages);
-        tagsMessage = tagMessages.first();
-
-        if (tagsMessage?.content?.toLowerCase() === "none") {
-
-        } else if (tagsMessage?.content?.toLowerCase() === "cancel") {
-          tagsMessage.reply({ content: `Steam import session aborted! Provide id '${gameId}' to the gameId option of steamimport to pickup where you left off.`, options: { flags: MessageFlags.Ephemeral }});
-          return;
-        }
-
-        const inputTags:string[] = getTagsFromMessage(tagsMessage).sort((a, b) => a.localeCompare(b));
-        const allPotentialTags:string[] = steamProvidedGameTags.concat(inputTags);
-        for (const potentialTag of allPotentialTags) {
+      let playerRange: number[] = [];
+      let tags: Tag[] = [];
+      let lowerPlayerBound = 1;
+      let upperPlayerBound: number | null = null;
+      let messageToReply: Message | undefined;
+      if (basicImportFlag) {
+        for (const potentialTag of steamProvidedGameTags) {
           if (!tags.some(tagToAdd => tagToAdd.name.toLowerCase() === potentialTag.toLowerCase())) {
             tags.push(Tag.build({ name: potentialTag }));
           }
         }
-      } catch (ex) {
-        handleSteamImportCollectorError(ex, sentPlayersMessage, gameId);
-        return;
+      } else {
+        const sentPlayersMessage = await interaction.followUp({ ...formatNewGameNumPlayersMessage(gameName, true), ephemeral: true });
+        messageToReply = sentPlayersMessage;
+
+        const sentPlayersMessageFilter = i => i.user.id === interaction.user.id;
+        try {
+          const firstPlayerRangeButtonClicked = await sentPlayersMessage.awaitMessageComponent({ filter: sentPlayersMessageFilter, time: INPUT_TIMEOUT_MILLISECONDS });
+          firstPlayerRangeButtonClicked.deferUpdate();
+
+          const buttonId = firstPlayerRangeButtonClicked.customId;
+          if (buttonId === "skipGame") {
+            continue;
+          } else if (buttonId === "end") {
+            sentPlayersMessage.edit(`Steam import session aborted! Provide id '${gameId}' to the gameId option of steamimport to pickup where you left off.`);
+            return;
+          }
+          const numPlayersClick = getNumPlayersFromId(buttonId);
+          playerRange.push(numPlayersClick);
+
+          await sentPlayersMessage.edit(formatNewGameNumPlayersMessage(gameName, true, playerRange));
+
+        } catch (ex) {
+          handleSteamImportCollectorError(ex, sentPlayersMessage, gameId);
+          return;
+        }
+
+        //request number of players, #2
+        try {
+          const secondPlayerRangeButtonClicked = await sentPlayersMessage.awaitMessageComponent({ filter: sentPlayersMessageFilter, time: INPUT_TIMEOUT_MILLISECONDS });
+          secondPlayerRangeButtonClicked.deferUpdate();
+
+          const buttonId = secondPlayerRangeButtonClicked.customId;
+          if (buttonId === "skipGame") {
+            continue;
+          } else if (buttonId === "end") {
+            sentPlayersMessage.edit({ content: `Steam import session aborted! Provide id '${gameId}' to the gameId option of steamimport to pickup where you left off.`});
+            return;
+          }
+
+          const numPlayersClick = getNumPlayersFromId(buttonId);
+          playerRange.push(numPlayersClick);
+          playerRange = playerRange.sort((a, b) => a - b);
+          await sentPlayersMessage.edit(formatNewGameNumPlayersMessage(gameName, true, playerRange));
+        } catch (ex) {
+          handleSteamImportCollectorError(ex, sentPlayersMessage, gameId);
+          return;
+        }
+        
+        lowerPlayerBound = playerRange[0];
+        upperPlayerBound = playerRange[1];
+
+        //tags
+        const tagsRequestMessage = await sentPlayersMessage.reply({ content: `'${gameName}' player range ${lowerPlayerBound} - ${upperPlayerBound} entered. What tags should be added to the Steam tags (${steamProvidedGameTags.join(', ')})? ex: example1, example2, etc. Or, type 'None' or 'Cancel'`, options: { flags: MessageFlags.Ephemeral }});
+        messageToReply = tagsRequestMessage;
+
+        let tagsMessage: Message<boolean> | undefined;
+        try {
+          const tagResponseFilter = m => interaction.user.id === m.author.id;
+          const tagMessages = await interaction.channel.awaitMessages({ filter: tagResponseFilter, time: INPUT_TIMEOUT_MILLISECONDS, max: 1, errors: ['time'] });
+          tagsMessage = tagMessages.first();
+          messageToReply = tagsRequestMessage;
+
+          if (tagsMessage?.content?.toLowerCase() === "none") {
+
+          } else if (tagsMessage?.content?.toLowerCase() === "cancel") {
+            tagsMessage.reply({ content: `Steam import session aborted! Provide id '${gameId}' to the gameId option of steamimport to pickup where you left off.`, options: { flags: MessageFlags.Ephemeral }});
+            return;
+          }
+
+          const inputTags: string[] = getTagsFromMessage(tagsMessage).sort((a, b) => a.localeCompare(b));
+          const allPotentialTags: string[] = steamProvidedGameTags.concat(inputTags);
+          for (const potentialTag of allPotentialTags) {
+            if (!tags.some(tagToAdd => tagToAdd.name.toLowerCase() === potentialTag.toLowerCase())) {
+              tags.push(Tag.build({ name: potentialTag }));
+            }
+          }
+        } catch (ex) {
+          handleSteamImportCollectorError(ex, sentPlayersMessage, gameId);
+          return;
+        }
       }
-
+      
       tags = await findOrCreateTags(tags);
-      const newGame:Game = Game.build({
-        name: gameName,
-        lowerPlayerBound: lowerPlayerBound,
-        upperPlayerBound: upperPlayerBound,
-        steamId: gameId
-      });
 
-      const game = await insertGame(newGame, tags);
+      const game = await insertGame(gameName, lowerPlayerBound, upperPlayerBound, gameId, tags);
       await mapGameToSteamUser(game, steamUserPlatformMapping);
 
-      if (tagsMessage) {
-        await tagsMessage.reply({ content: `Successfully saved ${game.toString()}`, options: { flags: MessageFlags.Ephemeral }});
+      const successMessage = { content: `Successfully saved ${game.toString()}`, options: { flags: MessageFlags.Ephemeral }};
+      if (typeof messageToReply !== "undefined") {
+        await messageToReply.reply(successMessage);
+      } else {
+        // interaction.followUp(successMessage)
       }
 
       importedSteamGames.push(game);

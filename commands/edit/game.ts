@@ -1,8 +1,8 @@
 import path from "node:path";
-import { Game, Tag } from "../../models/models";
-import { findOrCreateTags, getGameById, getGames, getGamesByName, insertGame } from "../../db/sequelizeDbLayer";
+import { getGameById, getGamesByName, updateGame } from "../../db/sequelizeDbLayer";
 import { ChatInputCommandInteraction, SlashCommandSubcommandBuilder } from "discord.js";
 import { buildGameModal, handleGameModalInteraction } from "../../shared/gameModalHelpers";
+import { validateGameInputs } from "../../shared/validationHelpers";
 
 const COMMAND_NAME = path.basename(__filename, ".ts");
 const COMMAND_DESCRIPTION = "Edit a game within Jigsaw's library.";
@@ -51,29 +51,20 @@ export default {
       const filter = (interaction) => interaction.customId === EDIT_GAME_MODAL_ID;
       const modalInteraction = await interaction.awaitModalSubmit({ filter, time: 4 * 60_000});
 
-      let replyContent: string[] = [];
       if (modalInteraction.isModalSubmit()) {
         const modalResponse = await handleGameModalInteraction(modalInteraction);
-        if (modalResponse.lowerPlayerBound == null || isNaN(modalResponse.lowerPlayerBound)) {
-          replyContent.push("Lower Player Bound must be an integer.");
+        const gameValidationResponse = await validateGameInputs(modalResponse.name, modalResponse.lowerPlayerBound, modalResponse.upperPlayerBound);
+  
+        if (!gameValidationResponse.success) {
+          await modalInteraction.reply({ content: gameValidationResponse.errorMessage, ephemeral: true});
+          return;
         }
-        if (modalResponse.upperPlayerBound == null || isNaN(modalResponse.upperPlayerBound)) {
-          replyContent.push("Upper Player Bound must be an integer if it is provided.");
-        }
-
-        if (replyContent.length === 0) {
-          game.name = modalResponse.name;
-          game.lowerPlayerBound = modalResponse.lowerPlayerBound!.valueOf();
-          game.upperPlayerBound = modalResponse.upperPlayerBound;
-          await game.setTags(modalResponse.tags);
-          await game.save();
-          const savedGame = await getGameById(game.id);
-
-          replyContent = [`Successfully saved ${savedGame.toString()}`];
-        }
+        
+        const savedGame = await updateGame(game, modalResponse.name, modalResponse.lowerPlayerBound!.valueOf(), modalResponse.upperPlayerBound, modalResponse.tags);
+        await modalInteraction.reply({ content: `Successfully saved ${savedGame.toString()}`, ephemeral: true });
       }
-      await modalInteraction.reply({ content: replyContent.join('\r\n'), ephemeral: true });
     } catch (ex) {
+      console.log(ex);
       let message = String(ex);
       if (ex instanceof Error) message = ex.message;
 

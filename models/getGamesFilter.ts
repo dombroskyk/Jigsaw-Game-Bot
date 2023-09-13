@@ -1,16 +1,20 @@
 
 
 export class GetGamesFilter {
-    numPlayers: number;
+    numPlayers: number | null;
     yesTags: string[];
     noTags: string[];
     games: string[];
 
-    constructor(numPlayers: number) {
+    constructor(numPlayers: number | null = null) {
         this.numPlayers = numPlayers;
         this.yesTags = [];
         this.noTags = [];
         this.games = [];
+    }
+
+    addNumPlayersFilter(numPlayers: number): void {
+        this.numPlayers = numPlayers;
     }
 
     addGameFilter(gameName: string): void {

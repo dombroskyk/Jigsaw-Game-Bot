@@ -10,12 +10,13 @@ import { buildCommandDictionary } from './commandRegistrationHelpers';
 dotenv.config();
 
 //todo: democracy mode
-// MVP: todo: steam/epic integration (must manually manage linking, Discord does not allow getting a users connections via bot)
+// MVP: todo: epic integration (must manually manage linking, Discord does not allow getting a users connections via bot)
 // -- suggest games from a collection of mentioned users
-// -- import games wizard
-// remove tag interaction
 // string constants to common file?
 // minimum permissions
+// Success message on basic import
+// Substring search
+// list one game
 // mac support flag
 // Right click user action/commands
 //scrub client id/secret from old history or generate a new one
@@ -23,7 +24,6 @@ const client = new Client({ intents: [GatewayIntentBits.GuildMembers, GatewayInt
                                       GatewayIntentBits.GuildScheduledEvents, GatewayIntentBits.Guilds, GatewayIntentBits.MessageContent] });
 
 const commands: CommandDictionary = buildCommandDictionary();
-console.log(commands);
 
 client.once(Events.ClientReady, () => {
   console.log(`Logged in as ${client.user!.tag}`);
@@ -37,16 +37,6 @@ client.on(Events.Error, error => {
   closeDb();
   console.log(`Client error: ${error}`);
 });
-
-// client.on(Events.MessageCreate, async msg => {
-//   if (msg.author.bot) return;
-//   if (!msg.mentions.users.filter(u => u.id === client.user!.id).size) return;
-
-//   startMessageContext(msg);
-
-//   const messageText = msg.content;
-//   const messageTextLower = messageText.toLowerCase();
-// });
 
 client.on(Events.InteractionCreate, async (interaction) => {
   setInteraction(interaction);

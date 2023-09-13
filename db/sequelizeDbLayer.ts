@@ -1,7 +1,7 @@
-import { FindOptions, IncludeOptions, Op, Sequelize } from "sequelize";
+import { FindOptions, Op, Sequelize } from "sequelize";
 import * as dotenv from 'dotenv';
 import { Game, GamesTableDefinition, UserPlatformMapping, UserPlatformMappingsTableDefinition, Tag, TagsTableDefinition } from "../models/models";
-import { GetGamesFilter } from "models/getGamesFilter";
+import { GetGamesFilter } from "../models/getGamesFilter";
 dotenv.config();
 
 const sequelize = new Sequelize('Jigsaw', process.env.SEQUELIZE_DB_USER!, process.env.SEQUELIZE_DB_PASSWORD!, {
@@ -26,22 +26,79 @@ UserPlatformMapping.belongsToMany(Game, { through: 'Game_SteamUserPlatformMappin
 // sequelize.sync({alter: true});
 sequelize.sync();
 
-export async function insertGame(gameVals: Game, tags: Tag[]): Promise<Game> {
-	const game = await gameVals.save();
-	await game.setTags(tags);
+export async function insertGame(name: string, lowerPlayerBound: number, upperPlayerBound: number | null, steamId: number | null, tags: Tag[]): Promise<Game> {
+	//sanitize
+	if (upperPlayerBound !== null && upperPlayerBound > lowerPlayerBound) {
+		const trueUpperPlayerBound = lowerPlayerBound;
+		lowerPlayerBound = upperPlayerBound;
+		upperPlayerBound = trueUpperPlayerBound;
+	}
+
+	const game = Game.build({
+        name: name.replace(/[^ -~]/g, ""),
+        lowerPlayerBound: lowerPlayerBound,
+        upperPlayerBound: upperPlayerBound,
+		steamId: steamId,
+    });
+
+	//revalidate
+    const existingGames = await getGames();
+    if (!existingGames.some(game => game.name.toLowerCase() === name.toLowerCase())) {
+        await saveGame(game, tags);
+	} else {
+		throw new Error(`${game.name} already exists, delete the existing entry before adding a new instance of it`);
+	}
 	
 	return await getGameById(game.id);
 }
 
+export async function updateGame(game: Game, name: string, lowerPlayerBound: number, upperPlayerBound: number | null, tags: Tag[]): Promise<Game> {
+	//sanitize
+	if (upperPlayerBound !== null && upperPlayerBound > lowerPlayerBound) {
+		const trueUpperPlayerBound = lowerPlayerBound;
+		lowerPlayerBound = upperPlayerBound;
+		upperPlayerBound = trueUpperPlayerBound;
+	}
+
+	const gamesFilter = new GetGamesFilter();
+	gamesFilter.addGameFilter(game.name);
+
+	const existingGames = await getGames(gamesFilter);
+    if (!existingGames.some(existingGame => existingGame.name.toLowerCase() === name.toLowerCase() && existingGame.name.toLowerCase() !== game.name.toLowerCase())) {
+		game.name = name.replace(/[^ -~]/g, "");
+		game.lowerPlayerBound = lowerPlayerBound;
+		game.upperPlayerBound = upperPlayerBound;
+
+		await saveGame(game, tags);
+	}
+
+	return await getGameById(game.id);
+};
+
+async function saveGame(game: Game, tags: Tag[]): Promise<void> {
+	try {
+		await game.save();
+		await game.setTags(tags);
+	} catch (error) {
+		console.log(error);
+		if (error.name === "SequelizeUniqueConstraintError") {
+			throw new Error(`Game ${game.name} already exists.`);
+		}
+
+		throw new Error(`Something went wrong with adding game ${game.name}.`)
+	}
+}
+
 export async function getGames(getGamesFilter?: GetGamesFilter): Promise<Game[]> {
-	let gameFindOptions:FindOptions = { 
+	let gameFindOptions: FindOptions = { 
 		include: {
 			model: Tag
 		}
 	};
+
 	if (typeof getGamesFilter !== "undefined" && getGamesFilter !== null) {
-		let yesTagsWhere:any = null;
-		let noTagsWhere:any = null;
+		let yesTagsWhere: any = null;
+		let noTagsWhere: any = null;
 		if (getGamesFilter.yesTags.length) {
 			yesTagsWhere = {
 				'$Tags.name$': { [Op.in]: getGamesFilter.yesTags }
@@ -102,7 +159,7 @@ export async function getTags(): Promise<Tag[]> {
 }
 
 export async function findOrCreateTags(tags: Tag[]): Promise<Tag[]> {
-	let actualTags:Tag[] = [];
+	let actualTags: Tag[] = [];
 	for(const tag of tags) {
 		let actualTag = await Tag.findOne({ where: { name: { [Op.like]: tag.name } } });
 		if (actualTag === null)

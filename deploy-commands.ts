@@ -4,12 +4,6 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 
 const commands: RESTPostAPIChatInputApplicationCommandsJSONBody[] = getCommandsToRegisterFromDir();
-// const pushCommandCallback = (command: ICommand) => {
-//   console.log(command.data);
-//   commands.push(command.data.toJSON());
-// };
-
-
 const rest = new REST().setToken(process.env.CLIENT_TOKEN!);
 
 rest.put(Routes.applicationGuildCommands(process.env.APPLICATION_ID!, process.env.DISCORD_GUILD_ID!), { body: commands })

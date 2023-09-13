@@ -1,8 +1,9 @@
 import path from "node:path";
 import { Game } from "../../models/models";
-import { getGames, insertGame } from "../../db/sequelizeDbLayer";
+import { insertGame } from "../../db/sequelizeDbLayer";
 import { ChatInputCommandInteraction, SlashCommandSubcommandBuilder } from "discord.js";
 import { buildGameModal, handleGameModalInteraction } from "../../shared/gameModalHelpers";
+import { validateGameInputs } from "../../shared/validationHelpers";
 
 const COMMAND_NAME = path.basename(__filename, ".ts");
 const COMMAND_DESCRIPTION = "Manually add a game to Jigsaw's library.";
@@ -25,57 +26,31 @@ export default {
       const filter = (filteredInteraction) => filteredInteraction.customId === ADD_GAME_MODAL_ID;
       const modalInteraction = await interaction.awaitModalSubmit({ filter, time: 4 * 1_000});
 
-      let replyContent: string[] = [];
+      //validate modal input
       const modalResponse = await handleGameModalInteraction(modalInteraction);
-      if (modalResponse.lowerPlayerBound == null || isNaN(modalResponse.lowerPlayerBound)) {
-        replyContent.push("Lower Player Bound must be an integer.");
-      }
-      if (modalResponse.upperPlayerBound == null || isNaN(modalResponse.upperPlayerBound)) {
-        replyContent.push("Upper Player Bound must be an integer if it is provided.");
-      }
-      if (modalResponse.lowerPlayerBound !== null && 
-          modalResponse.upperPlayerBound !== null && 
-          modalResponse.lowerPlayerBound > modalResponse.upperPlayerBound) {
-        const newLowerPlayerBound = modalResponse.upperPlayerBound;
-        modalResponse.upperPlayerBound = modalResponse.lowerPlayerBound;
-        modalResponse.lowerPlayerBound = newLowerPlayerBound;
-      }
+      const gameValidationResponse = await validateGameInputs(modalResponse.name, modalResponse.lowerPlayerBound, modalResponse.upperPlayerBound);
 
-      const gameCreationVals: Game = Game.build({
-        name: modalResponse.name,
-        lowerPlayerBound: modalResponse.lowerPlayerBound!.valueOf(),
-        upperPlayerBound: modalResponse.upperPlayerBound,
-      });
-
-      let game: Game;
-      const games = await getGames();
-      if (!games.some(game => game.name.toLowerCase() === gameCreationVals.name.toLowerCase())) {
-        try {
-          game = await insertGame(gameCreationVals, modalResponse.tags);
-        } catch (error) {
-          console.log(error);
-          if (error.name === "SequelizeUniqueConstraintError") {
-            await modalInteraction.reply({ content: `Game ${gameCreationVals.name} already exists.`, ephemeral: true});
-            return;
-          }
-
-          await modalInteraction.reply({ content: `Something went wrong with adding game ${gameCreationVals.name}.`, ephemeral: true });
-          return;
-        }
-      } else {
-        await modalInteraction.reply({ content: `${gameCreationVals.name} already exists, delete the existing entry before adding a new instance of it`, ephemeral: true });
+      if (!gameValidationResponse.success) {
+        await modalInteraction.reply({ content: gameValidationResponse.errorMessage, ephemeral: true});
         return;
       }
 
-      replyContent = [`Successfully saved ${game.toString()}`];
+      let game: Game;
+      try {
+        game = await insertGame(modalResponse.name, modalResponse.lowerPlayerBound!.valueOf(), modalResponse.upperPlayerBound, null, modalResponse.tags);
+      } catch (insertGameError) {
+        console.log(insertGameError);
+        await modalInteraction.reply({ content: insertGameError.message, ephemeral: true});
+        return;
+      }
       
-      await modalInteraction.reply({ content: replyContent.join('\r\n'), ephemeral: true });
+      await modalInteraction.reply({ content: `Successfully saved ${game.toString()}`, ephemeral: true });
     } catch (ex) {
       let message = String(ex);
       if (ex instanceof Error) message = ex.message;
 
       if (message.toLocaleLowerCase().indexOf("time") !== -1) {
-        message = `Timed out waiting for modal.\r\nIf this was unintentional please start over again.`;
+        message = 'Timed out waiting for modal.\r\nIf this was unintentional please start over again.';
       }
       
       await interaction.followUp({ content: message, ephemeral: true });
