@@ -55,8 +55,8 @@ class PlayAGameCommand extends Command implements ICommand {
     let currInteraction = interaction;
     await respondToMessage(currInteraction, "So you want to play a game...")
 
-    let filter:GetGamesFilter = new GetGamesFilter(numPlayers)
-    let games:Game[] = await getGames(filter);
+    let filter: GetGamesFilter = new GetGamesFilter(numPlayers)
+    let games: Game[] = await getGames(filter);
     while (games.length > 0) {
       const game = games[Math.floor(Math.random() * games.length)];
       const gameSuggestionMessage = await respondToMessage(currInteraction, formatGameSuggestion(game));

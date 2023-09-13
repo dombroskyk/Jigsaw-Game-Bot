@@ -128,8 +128,15 @@ export async function getGames(getGamesFilter?: GetGamesFilter): Promise<Game[]>
 			gameFindOptions.where = {};
 		}
 
-		gameFindOptions.where['lowerPlayerBound'] = { [Op.lte]: getGamesFilter.numPlayers };
-		gameFindOptions.where['upperPlayerBound'] = { [Op.gte]: getGamesFilter.numPlayers };
+		if (getGamesFilter.numPlayers !== null) {
+			gameFindOptions.where['lowerPlayerBound'] = { [Op.lte]: getGamesFilter.numPlayers };
+			gameFindOptions.where['upperPlayerBound'] = { 
+				[Op.or]: {
+					[Op.gte]: getGamesFilter.numPlayers,
+					[Op.is]: null,
+				}
+			};
+		}
 	}
 
 	const games = await Game.findAll(gameFindOptions);
