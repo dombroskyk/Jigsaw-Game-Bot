@@ -28,7 +28,7 @@ sequelize.sync();
 
 export async function insertGame(name: string, lowerPlayerBound: number, upperPlayerBound: number | null, steamId: number | null, tags: Tag[]): Promise<Game> {
 	//sanitize
-	if (upperPlayerBound !== null && upperPlayerBound > lowerPlayerBound) {
+	if (upperPlayerBound !== null && upperPlayerBound < lowerPlayerBound) {
 		const trueUpperPlayerBound = lowerPlayerBound;
 		lowerPlayerBound = upperPlayerBound;
 		upperPlayerBound = trueUpperPlayerBound;
@@ -54,7 +54,7 @@ export async function insertGame(name: string, lowerPlayerBound: number, upperPl
 
 export async function updateGame(game: Game, name: string, lowerPlayerBound: number, upperPlayerBound: number | null, tags: Tag[]): Promise<Game> {
 	//sanitize
-	if (upperPlayerBound !== null && upperPlayerBound > lowerPlayerBound) {
+	if (upperPlayerBound !== null && upperPlayerBound < lowerPlayerBound) {
 		const trueUpperPlayerBound = lowerPlayerBound;
 		lowerPlayerBound = upperPlayerBound;
 		upperPlayerBound = trueUpperPlayerBound;

@@ -24,7 +24,7 @@ export default {
       const modal = buildGameModal(ADD_GAME_MODAL_ID);
       await interaction.showModal(modal);
       const filter = (filteredInteraction) => filteredInteraction.customId === ADD_GAME_MODAL_ID;
-      const modalInteraction = await interaction.awaitModalSubmit({ filter, time: 4 * 1_000});
+      const modalInteraction = await interaction.awaitModalSubmit({ filter, time: 4 * 60_000});
 
       //validate modal input
       const modalResponse = await handleGameModalInteraction(modalInteraction);
