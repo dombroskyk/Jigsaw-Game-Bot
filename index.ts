@@ -16,7 +16,6 @@ dotenv.config();
 // minimum permissions
 // Success message on basic import
 // Substring search
-// list one game
 // Right click user action/commands
 //scrub client id/secret from old history or generate a new one
 const client = new Client({ intents: [GatewayIntentBits.GuildMembers, GatewayIntentBits.GuildMessageReactions, GatewayIntentBits.GuildMessages,

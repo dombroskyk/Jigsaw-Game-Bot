@@ -1,5 +1,5 @@
 import path from "node:path";
-import { ChatInputCommandInteraction, SlashCommandBuilder, SlashCommandSubcommandsOnlyBuilder } from "discord.js";
+import { AutocompleteInteraction, ChatInputCommandInteraction, SlashCommandBuilder, SlashCommandSubcommandsOnlyBuilder } from "discord.js";
 import { getSubcommands } from "../../commandRegistrationHelpers";
 import { Command, IParentCommand, ISubcommand } from "../../types/command";
 
@@ -24,7 +24,7 @@ class ListCommand extends Command implements IParentCommand {
   })();
     
 
-  execute = async (interaction: ChatInputCommandInteraction) => {
+  execute = async (interaction: ChatInputCommandInteraction): Promise<void> => {
     const subcommand = subcommands.get(interaction.options.getSubcommand());
 
     if (!subcommand) {
@@ -34,6 +34,20 @@ class ListCommand extends Command implements IParentCommand {
 
     await subcommand?.execute(interaction);
   }
+
+  autocomplete = async (interaction: AutocompleteInteraction): Promise<void> => {
+    const subcommandName = interaction.options.getSubcommand();
+    const subcommand = subcommands.get(subcommandName);
+
+    if (!subcommand) {
+      console.error(`Subcommand '${subcommandName}' not found!`)
+      return;
+    }
+
+    if (subcommand.autocomplete) {
+      await subcommand.autocomplete(interaction);
+    }
+  };
 }
 
 export default new ListCommand();
