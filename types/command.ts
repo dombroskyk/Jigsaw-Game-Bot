@@ -3,6 +3,7 @@ import { SlashCommandBuilder, SlashCommandSubcommandBuilder, SlashCommandSubcomm
 export interface BaseCommand {
     helpText?: string,
     execute: (any) => Promise<void>,
+    autocomplete?: (any) => Promise<void>,
 }
 
 export interface ICommand extends BaseCommand {

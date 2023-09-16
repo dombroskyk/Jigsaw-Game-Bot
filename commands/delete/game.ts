@@ -1,6 +1,6 @@
 import path from "node:path";
-import { deleteGame, getGamesByName } from "../../db/sequelizeDbLayer";
-import { ChatInputCommandInteraction, SlashCommandSubcommandBuilder } from "discord.js";
+import { deleteGame, getGamesByName, getGamesByStartsWith } from "../../db/sequelizeDbLayer";
+import { AutocompleteInteraction, ChatInputCommandInteraction, SlashCommandSubcommandBuilder } from "discord.js";
 
 const COMMAND_NAME = path.basename(__filename, ".ts");
 const COMMAND_DESCRIPTION = "Delete a game known by Jigsaw";
@@ -19,10 +19,11 @@ export default {
     .addStringOption(option =>
       option.setName(GAME_NAME_ARG_KEY)
         .setDescription(GAME_NAME_ARG_KEY)
-        .setRequired(true)),
+        .setRequired(true)
+        .setAutocomplete(true)),
 
 
-  async execute(interaction: ChatInputCommandInteraction) {
+  async execute(interaction: ChatInputCommandInteraction): Promise<void> {
     const gameName = interaction.options.getString(GAME_NAME_ARG_KEY, true);
 
     const gamesToDelete = await getGamesByName(gameName);
@@ -41,5 +42,13 @@ export default {
 
       await interaction.reply({ content: buffer, ephemeral: true });
     }
+  },
+
+  async autocomplete(interaction: AutocompleteInteraction): Promise<void> {
+    const focusedValue = interaction.options.getFocused();
+    let games = await getGamesByStartsWith(focusedValue);
+    games = games.slice(0, 25);
+    
+    await interaction.respond(games.map(game => ({ name: game.name, value: game.name })));
   }
 };

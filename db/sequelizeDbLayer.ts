@@ -145,6 +145,12 @@ export async function getGames(getGamesFilter?: GetGamesFilter): Promise<Game[]>
 	});
 }
 
+export async function getGamesByStartsWith(startsWith: string): Promise<Game[]> {
+	return await Game.findAll({
+		'where': { 'name': { [Op.startsWith]: startsWith } }
+	});
+}
+
 export async function getGameById(id: number): Promise<Game> {
 	return await Game.findByPk(id, {include: Tag, rejectOnEmpty: true});
 }

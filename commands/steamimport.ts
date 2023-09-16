@@ -1,5 +1,5 @@
 import path from "node:path";
-import axios from 'axios';
+import axios, { AxiosError, AxiosResponse } from 'axios';
 import { findOrCreateTags, getImportedSteamGames, getSteamUserPlatformMappingByDiscordId, mapGameToSteamUser } from "../db/sequelizeDbLayer"; // getImportedSteamGameIds, writeImportedSteamGameIds,
 import { formatNewGameNumPlayersMessage } from "../messageFormatter";
 import { getTagsFromMessage, getNumPlayersFromId } from "../textHelpers/textParsing";
@@ -8,6 +8,7 @@ import { ChatInputCommandInteraction, Message, MessageFlags, MessagePayload, Mes
 import { insertGame } from "../db/sequelizeDbLayer";
 import { Game, Tag, UserPlatformMapping } from "../models/models";
 import { Command, ICommand } from "../types/command";
+import { axiosExceptionHandling, basicExceptionHandling } from "../errorHandling/exceptionMessage";
 
 const COMMAND_NAME = path.basename(__filename, ".ts");
 const COMMAND_DESCRIPTION = "Help Jigsaw learn more games from a Steam library!";
@@ -19,6 +20,7 @@ const BASIC_IMPORT_KEY = "basic_import";
 const BASIC_IMPORT_DESCRIPTION = "Quickly add all the games in a Steam library by assigning default values. Games can be edited later."
 
 const INPUT_TIMEOUT_MILLISECONDS = 45 * 1000;
+const MAX_DISCORD_MESSAGE_LENGTH = 2000;
 
 class SteamImportCommand extends Command implements ICommand {
   helpText: string = `${COMMAND_NAME} - ${COMMAND_DESCRIPTION}
@@ -56,14 +58,23 @@ class SteamImportCommand extends Command implements ICommand {
     try {
       steamUserPlatformMapping = await getSteamUserPlatformMappingByDiscordId(user.id);
     } catch (error) {
-      interaction.reply({content: `User ${user.username} has not registered their Steam Id!`, options: { flags: MessageFlags.Ephemeral }});
+      await interaction.reply({content: `User ${user.username} has not registered their Steam Id!`, ephemeral: true });
       return;
     }
     
-    interaction.reply({ content: "Validated user, compiling game list...", options: { flags: MessageFlags.Ephemeral }});
+    await interaction.reply({ content: "Validated user, compiling game list...", ephemeral: true });
 
-    const ownedGamesResponse = await axios
-      .get(`http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key=${process.env.STEAM_API_KEY}&steamid=${steamUserPlatformMapping.steamId}&format=json`);
+    let ownedGamesResponse: AxiosResponse<any, any>;
+    try {
+      ownedGamesResponse = await axios
+        .get(`http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key=${process.env.STEAM_API_KEY}&steamid=${steamUserPlatformMapping.steamId}&format=json`);
+    } catch (ex) {
+      let message = basicExceptionHandling(ex);
+      message = axiosExceptionHandling(ex);
+      
+      await interaction.followUp({ content: message, ephemeral: true });
+      return;
+    }
 
     const steamOwnedGameIds = ownedGamesResponse.data.response.games.map(game => game.appid);
     const importedSteamGames: Game[] = await getImportedSteamGames();
@@ -87,7 +98,13 @@ class SteamImportCommand extends Command implements ICommand {
         continue;
       }
 
-      const steamGameDetailResponse = await axios.get(`https://store.steampowered.com/api/appdetails?key=${process.env.STEAM_API_KEY}&appids=${gameId}`);
+      let steamGameDetailResponse: AxiosResponse<any, any> 
+      try {
+        steamGameDetailResponse = await axios.get(`https://store.steampowered.com/api/appdetails?key=${process.env.STEAM_API_KEY}&appids=${gameId}`);
+      } catch (ex) {
+
+        return;
+      }
       const gameIdKey = Object.keys(steamGameDetailResponse.data)[0];
       const dataForGame = steamGameDetailResponse.data[gameIdKey];
       if (!dataForGame || !dataForGame.data) {
@@ -200,15 +217,32 @@ class SteamImportCommand extends Command implements ICommand {
       const game = await insertGame(gameName, lowerPlayerBound, upperPlayerBound, gameId, tags);
       await mapGameToSteamUser(game, steamUserPlatformMapping);
 
-      const successMessage = { content: `Successfully saved ${game.toString()}`, options: { flags: MessageFlags.Ephemeral }};
-      if (typeof messageToReply !== "undefined") {
-        await messageToReply.reply(successMessage);
-      } else {
-        // interaction.followUp(successMessage)
+      if (!basicImportFlag) {
+        const successMessage = { content: `Successfully saved ${game.toString()}`, options: { flags: MessageFlags.Ephemeral }};
+        if (typeof messageToReply !== "undefined") {
+          await messageToReply.reply(successMessage);
+        } else {
+          // interaction.followUp(successMessage)
+        }
       }
 
       importedSteamGames.push(game);
     };
+
+    if (basicImportFlag) {
+      let buffer = "Successfully basic imported:\n";
+      for (const game of importedSteamGames) {
+        const gameString = game.toString();
+        if (gameString.length + buffer.length + 2 >= MAX_DISCORD_MESSAGE_LENGTH) {
+          await interaction.followUp({ content: buffer, ephemeral: true });
+          buffer = "";
+        }
+
+        buffer += gameString + "\n";
+      }
+
+      await interaction.followUp({ content: buffer, ephemeral: true });
+    }
   }
 }
 

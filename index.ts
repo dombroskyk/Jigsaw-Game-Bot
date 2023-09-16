@@ -17,7 +17,6 @@ dotenv.config();
 // Success message on basic import
 // Substring search
 // list one game
-// mac support flag
 // Right click user action/commands
 //scrub client id/secret from old history or generate a new one
 const client = new Client({ intents: [GatewayIntentBits.GuildMembers, GatewayIntentBits.GuildMessageReactions, GatewayIntentBits.GuildMessages,
@@ -40,7 +39,7 @@ client.on(Events.Error, error => {
 
 client.on(Events.InteractionCreate, async (interaction) => {
   setInteraction(interaction);
-
+  console.log(interaction);
   if (interaction.isCommand()) {
     const command = commands[interaction.commandName];
     if (!command) return;
@@ -55,6 +54,17 @@ client.on(Events.InteractionCreate, async (interaction) => {
       } catch (error2) {
         await interaction.followUp(errorMessageObj)
       }
+    }
+  } else if (interaction.isAutocomplete()) {
+    const command = commands[interaction.commandName];
+    if (!command) return;
+
+    try {
+      if (command.autocomplete) {
+        await command.autocomplete(interaction);
+      }
+    } catch (error) {
+      console.error(error);
     }
   }
 });

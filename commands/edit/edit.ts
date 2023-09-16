@@ -1,5 +1,5 @@
 import path from "node:path";
-import { ChatInputCommandInteraction, SlashCommandBuilder, SlashCommandSubcommandsOnlyBuilder } from "discord.js";
+import { AutocompleteInteraction, ChatInputCommandInteraction, SlashCommandBuilder, SlashCommandSubcommandsOnlyBuilder } from "discord.js";
 import { getSubcommands } from "../../commandRegistrationHelpers";
 import { Command, IParentCommand, ISubcommand } from "../../types/command";
 
@@ -24,16 +24,31 @@ class EditCommand extends Command implements IParentCommand {
   })();
 
 
-  execute = async (interaction: ChatInputCommandInteraction) => {
-    const subcommand = subcommands.get(interaction.options.getSubcommand());
+  execute = async (interaction: ChatInputCommandInteraction): Promise<void> => {
+    const subcommandName = interaction.options.getSubcommand();
+    const subcommand = subcommands.get(subcommandName);
 
     if (!subcommand) {
-      await interaction.followUp({ content: "Subcommand not found!", ephemeral: true });
+      await interaction.followUp({ content: `Subcommand '${subcommandName}' not found!`, ephemeral: true });
       return;
     }
 
     await subcommand?.execute(interaction);
   }
+
+  autocomplete = async (interaction: AutocompleteInteraction): Promise<void> => {
+    const subcommandName = interaction.options.getSubcommand();
+    const subcommand = subcommands.get(subcommandName);
+
+    if (!subcommand) {
+      console.error(`Subcommand '${subcommandName}' not found!`)
+      return;
+    }
+
+    if (subcommand.autocomplete) {
+      await subcommand.autocomplete(interaction);
+    }
+  };
 }
 
 export default new EditCommand();

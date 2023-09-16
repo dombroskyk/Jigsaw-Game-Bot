@@ -1,5 +1,5 @@
 import path from "node:path";
-import { getGameById, getGamesByName, updateGame } from "../../db/sequelizeDbLayer";
+import { getGameById, getGames, getGamesByName, getGamesByStartsWith, updateGame } from "../../db/sequelizeDbLayer";
 import { ChatInputCommandInteraction, SlashCommandSubcommandBuilder } from "discord.js";
 import { buildGameModal, handleGameModalInteraction } from "../../shared/gameModalHelpers";
 import { validateGameInputs } from "../../shared/validationHelpers";
@@ -22,6 +22,7 @@ export default {
     .addStringOption(option => option.setName(GAME_NAME_ARG_KEY)
         .setDescription("Game to edit")
         .setRequired(true)
+        .setAutocomplete(true)
     ),
     // .addSubcommandGroup(group =>
     //   group.setName("user_platforms")
@@ -74,5 +75,13 @@ export default {
       
       await interaction.followUp({ content: message, ephemeral: true });
     }
+  },
+
+  async autocomplete(interaction) {
+    const focusedValue = interaction.options.getFocused();
+    let games = await getGamesByStartsWith(focusedValue);
+    games = games.slice(0, 25);
+    
+    await interaction.respond(games.map(game => ({ name: game.name, value: game.name })));
   }
 }
