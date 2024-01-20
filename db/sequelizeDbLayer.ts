@@ -151,6 +151,12 @@ export async function getGamesByStartsWith(startsWith: string): Promise<Game[]> 
 	});
 }
 
+export async function getGamesBySubstring(substring: string): Promise<Game[]> {
+	return await Game.findAll({
+		'where': { 'name': { [Op.like]: `%${substring}%` } } //intentionally not using Op.substring to expand on this implementation later
+	});
+}
+
 export async function getGameById(id: number): Promise<Game> {
 	return await Game.findByPk(id, {include: Tag, rejectOnEmpty: true});
 }

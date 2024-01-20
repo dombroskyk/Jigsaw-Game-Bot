@@ -1,5 +1,5 @@
 import path from "node:path";
-import { deleteGame, getGamesByName, getGamesByStartsWith } from "../../db/sequelizeDbLayer";
+import { deleteGame, getGamesByName, getGamesByStartsWith, getGamesBySubstring } from "../../db/sequelizeDbLayer";
 import { AutocompleteInteraction, ChatInputCommandInteraction, SlashCommandSubcommandBuilder } from "discord.js";
 
 const COMMAND_NAME = path.basename(__filename, ".ts");
@@ -46,7 +46,7 @@ export default {
 
   async autocomplete(interaction: AutocompleteInteraction): Promise<void> {
     const focusedValue = interaction.options.getFocused();
-    let games = await getGamesByStartsWith(focusedValue);
+    let games = await getGamesBySubstring(focusedValue);
     games = games.slice(0, 25);
     
     await interaction.respond(games.map(game => ({ name: game.name, value: game.name })));
