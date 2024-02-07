@@ -1,6 +1,5 @@
 import fs from "node:fs";
 import path from "node:path";
-import { settings } from "./settings";
 import { ICommand, ISubcommand } from "types/command";
 import { RESTPostAPIChatInputApplicationCommandsJSONBody, SlashCommandBuilder, SlashCommandSubcommandsOnlyBuilder } from "discord.js";
 import { CommandDictionary } from "./types/commandDictionary";
@@ -13,7 +12,7 @@ export function getCommandsToRegisterFromDir(): RESTPostAPIChatInputApplicationC
   const commandsPath = path.join(__dirname, COMMANDS_DIR);
   const commandPathContents = fs.readdirSync(commandsPath, { withFileTypes: true });
   
-  const commandFiles = commandPathContents.filter(dirEnt => dirEnt.isFile()); //&& dirEnt.name.endsWith('edit.ts')
+  const commandFiles = commandPathContents.filter(dirEnt => dirEnt.isFile());
   const commandDirs = commandPathContents.filter(dirEnt => dirEnt.isDirectory());
 
   for (const file of commandFiles) {

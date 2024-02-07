@@ -1,5 +1,5 @@
 import path from "node:path";
-import axios, { AxiosError, AxiosResponse } from 'axios';
+import axios, { AxiosResponse } from 'axios';
 import { findOrCreateTags, getImportedSteamGames, getSteamUserPlatformMappingByDiscordId, mapGameToSteamUser } from "../db/sequelizeDbLayer"; // getImportedSteamGameIds, writeImportedSteamGameIds,
 import { formatNewGameNumPlayersMessage } from "../messageFormatter";
 import { getTagsFromMessage, getNumPlayersFromId } from "../textHelpers/textParsing";

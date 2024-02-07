@@ -1,5 +1,5 @@
 import path from "node:path";
-import { getGameById, getGames, getGamesByName, getGamesByStartsWith, getGamesBySubstring, updateGame } from "../../db/sequelizeDbLayer";
+import { getGamesByName, getGamesBySubstring, updateGame } from "../../db/sequelizeDbLayer";
 import { ChatInputCommandInteraction, SlashCommandSubcommandBuilder } from "discord.js";
 import { buildGameModal, handleGameModalInteraction } from "../../shared/gameModalHelpers";
 import { validateGameInputs } from "../../shared/validationHelpers";

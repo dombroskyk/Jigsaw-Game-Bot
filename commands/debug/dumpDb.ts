@@ -1,5 +1,5 @@
 import path from "node:path";
-import { ChatInputCommandInteraction, SlashCommandBuilder, SlashCommandSubcommandBuilder } from "discord.js";
+import { ChatInputCommandInteraction, SlashCommandSubcommandBuilder } from "discord.js";
 import { dumpDb } from "../../db/sequelizeDbLayer";
 
 export default {

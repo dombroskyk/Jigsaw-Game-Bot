@@ -1,6 +1,6 @@
 import path from "node:path";
 import { getTags } from "../../db/sequelizeDbLayer";
-import { ChatInputCommandInteraction, SlashCommandBuilder, SlashCommandSubcommandBuilder } from "discord.js";
+import { ChatInputCommandInteraction, SlashCommandSubcommandBuilder } from "discord.js";
 
 const COMMAND_NAME = path.basename(__filename, ".ts");
 const COMMAND_DESCRIPTION = "List the tags known with Jigsaw";

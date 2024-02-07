@@ -1,7 +1,6 @@
 import path from "node:path";
-import { getGames, getGamesByName, getGamesByStartsWith, getGamesBySubstring } from "../../db/sequelizeDbLayer";
+import { getGamesByName, getGamesBySubstring } from "../../db/sequelizeDbLayer";
 import { ChatInputCommandInteraction, SlashCommandSubcommandBuilder } from "discord.js";
-import { GetGamesFilter } from "../../models/getGamesFilter";
 
 const COMMAND_NAME = path.basename(__filename, ".ts");
 const COMMAND_DESCRIPTION = "List details of a game registered with Jigsaw.";

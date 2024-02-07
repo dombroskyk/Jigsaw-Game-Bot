@@ -1,6 +1,4 @@
 import path from "node:path";
-import axios from 'axios';
-import { Game } from "models/models";
 import { SlashCommandBuilder } from "discord.js";
 
 const USER1_ARG_KEY = "user1";

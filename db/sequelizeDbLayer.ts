@@ -152,9 +152,20 @@ export async function getGamesByStartsWith(startsWith: string): Promise<Game[]> 
 }
 
 export async function getGamesBySubstring(substring: string): Promise<Game[]> {
-	return await Game.findAll({
-		'where': { 'name': { [Op.like]: `%${substring}%` } } //intentionally not using Op.substring to expand on this implementation later
+	const gamesBestMatch = await Game.findAll({
+		'where': { 'name': { [Op.like]: `%${substring}%` } }
 	});
+
+	const gamesTypoMatch = substring.length > 3 ? await Game.findAll({
+		'where': {
+			[Op.and]: [
+				{ 'name': { [Op.like]: `${substring.split('').reduce((accumulated, current) => accumulated + `${current}%`, '%')}`} },
+				{ 'id': { [Op.notIn]: gamesBestMatch.map(game => game.id)} }
+			]
+		}
+	}) : [];
+
+	return gamesBestMatch.concat(gamesTypoMatch);
 }
 
 export async function getGameById(id: number): Promise<Game> {

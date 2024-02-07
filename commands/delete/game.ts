@@ -1,5 +1,5 @@
 import path from "node:path";
-import { deleteGame, getGamesByName, getGamesByStartsWith, getGamesBySubstring } from "../../db/sequelizeDbLayer";
+import { deleteGame, getGamesByName, getGamesBySubstring } from "../../db/sequelizeDbLayer";
 import { AutocompleteInteraction, ChatInputCommandInteraction, SlashCommandSubcommandBuilder } from "discord.js";
 
 const COMMAND_NAME = path.basename(__filename, ".ts");

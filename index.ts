@@ -1,7 +1,7 @@
 import * as dotenv from 'dotenv';
 // import 'source-map-support/register';
-import { Client, GatewayIntentBits, Events, Collection, Snowflake, ColorResolvable } from "discord.js";
-import { setInteraction, startMessageContext, setClient } from "./messageContextHelper";
+import { Client, GatewayIntentBits, Events } from "discord.js";
+import { setInteraction, setClient } from "./messageContextHelper";
 import { settings } from './settings';
 import { closeDb } from './db/sequelizeDbLayer';
 import { CommandDictionary } from './types/commandDictionary';

@@ -4,17 +4,39 @@ import { APIApplicationCommandOptionChoice, ChatInputCommandInteraction, SlashCo
 import { Command, ICommand } from "../types/command";
 
 const COMMAND_NAME_ARG_KEY = "command_name";
-const BASE_HELP_TEXT = "Jigsaw Game Bot is here to help you choose a game to play; either alone or with friends!";
+const BASE_HELP_TEXT = "Jigsaw Game Bot is here to help you choose a game to play; either alone or with friends!\r\nProvide a command name to the help command to get more detailed info for that command.";
 
 const commandsPath = path.join(__dirname);
-const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.ts'));
-let helpTextMapping: Map<string, string> = new Map<string, string>();
+const commandsPathContents = fs.readdirSync(commandsPath, { withFileTypes: true });
+const commandFiles = commandsPathContents.filter(dirEnt => dirEnt.isFile());
+const commandDirs = commandsPathContents.filter(dirEnt => dirEnt.isDirectory());
+let helpTextMapping: Map<string, ICommand> = new Map<string, ICommand>();
 let choices: APIApplicationCommandOptionChoice<string>[] = [];
 for (const commandFile of commandFiles) {
-  const commandFileName = path.parse(commandFile).name
-  helpTextMapping.set(commandFileName, require(path.join(commandsPath, commandFile)).default);
+  const filePath = path.join(commandsPath, commandFile.name);
+  helpTextMapping.set(commandFile.name, require(filePath).default);
 
-  choices.push({ name: commandFileName, value: commandFileName });
+  const fileBasename = path.basename(filePath, '.ts');
+  choices.push({ name: fileBasename, value: fileBasename });
+}
+
+for (const dir of commandDirs) {
+  const filePath = path.join(commandsPath, dir.name, `${dir.name}.ts`);
+  const command: ICommand = require(filePath).default;
+  helpTextMapping.set(dir.name, command);
+
+  choices.push({ name: dir.name, value: dir.name });
+
+  const commandFolderContents = fs.readdirSync(path.join(commandsPath, dir.name)).filter(fileName => path.basename(fileName, '.ts') !== dir.name);
+  for (const subcommandFile of commandFolderContents) {
+    const subCommandFileBasename = path.basename(subcommandFile, '.ts');
+    const subCommandFilePath = path.join(commandsPath, dir.name, subcommandFile)
+    const subCommand = require(subCommandFilePath).default;
+    
+    const subCommandChoice = `${dir.name} ${subCommandFileBasename}`
+    helpTextMapping.set(subCommandChoice, subCommand);
+    choices.push({ name: subCommandChoice, value: subCommandChoice });
+  }
 }
 
 class HelpCommand extends Command implements ICommand {
@@ -38,19 +60,25 @@ class HelpCommand extends Command implements ICommand {
 
     if (!commandName) {
       helpText = BASE_HELP_TEXT;
-      const commandFileNames = commandFiles.map(fileName => path.parse(fileName).name);
+      const commandFileNames = commandFiles.map(dirEnt => dirEnt.name);
       for (const fileName of commandFileNames) {
         helpText += `\r\n ${fileName}`;
       }
     } else {
-      const commandHelpText = helpTextMapping.get(commandName);
+      const command = helpTextMapping.get(commandName)!;
+      const commandHelpText = command.helpText;
+      console.log(helpTextMapping);
       if (typeof commandHelpText !== "undefined" && commandHelpText !== "") {
         helpText = commandHelpText;
+      } else {
+        helpText = "Help text hasn't been defined for this command yet!"
       }
     }
 
     await interaction.reply({ content: helpText, ephemeral: true });
   }
 }
+
+helpTextMapping.set("help", new HelpCommand());
 
 export default new HelpCommand();

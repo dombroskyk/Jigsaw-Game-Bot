@@ -1,5 +1,5 @@
 import path from "node:path";
-import { getGames, getGamesByStartsWith } from "../../db/sequelizeDbLayer";
+import { getGames } from "../../db/sequelizeDbLayer";
 import { ChatInputCommandInteraction, SlashCommandSubcommandBuilder } from "discord.js";
 
 const MAX_DISCORD_MESSAGE_LENGTH = 2000;
