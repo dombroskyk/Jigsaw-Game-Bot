@@ -26,7 +26,7 @@ UserPlatformMapping.belongsToMany(Game, { through: 'Game_SteamUserPlatformMappin
 // sequelize.sync({alter: true});
 sequelize.sync();
 
-export async function insertGame(name: string, lowerPlayerBound: number, upperPlayerBound: number | null, steamId: number | null, tags: Tag[]): Promise<Game> {
+export async function insertGame(name: string, lowerPlayerBound: number, upperPlayerBound: number | null, basicImported: boolean, steamId: number | null, tags: Tag[]): Promise<Game> {
 	//sanitize
 	if (upperPlayerBound !== null && upperPlayerBound < lowerPlayerBound) {
 		const trueUpperPlayerBound = lowerPlayerBound;
@@ -38,6 +38,7 @@ export async function insertGame(name: string, lowerPlayerBound: number, upperPl
         name: name.replace(/[^ -~]/g, ""),
         lowerPlayerBound: lowerPlayerBound,
         upperPlayerBound: upperPlayerBound,
+		basicImported: basicImported,
 		steamId: steamId,
     });
 
@@ -52,7 +53,7 @@ export async function insertGame(name: string, lowerPlayerBound: number, upperPl
 	return await getGameById(game.id);
 }
 
-export async function updateGame(game: Game, name: string, lowerPlayerBound: number, upperPlayerBound: number | null, tags: Tag[]): Promise<Game> {
+export async function updateGame(game: Game, name: string, lowerPlayerBound: number, upperPlayerBound: number | null, basicImported: boolean, tags: Tag[]): Promise<Game> {
 	//sanitize
 	if (upperPlayerBound !== null && upperPlayerBound < lowerPlayerBound) {
 		const trueUpperPlayerBound = lowerPlayerBound;
@@ -68,6 +69,7 @@ export async function updateGame(game: Game, name: string, lowerPlayerBound: num
 		game.name = name.replace(/[^ -~]/g, "");
 		game.lowerPlayerBound = lowerPlayerBound;
 		game.upperPlayerBound = upperPlayerBound;
+		game.basicImported = basicImported;
 
 		await saveGame(game, tags);
 	}
@@ -147,17 +149,17 @@ export async function getGames(getGamesFilter?: GetGamesFilter): Promise<Game[]>
 
 export async function getGamesByStartsWith(startsWith: string): Promise<Game[]> {
 	return await Game.findAll({
-		'where': { 'name': { [Op.startsWith]: startsWith } }
+		where: { 'name': { [Op.startsWith]: startsWith } }
 	});
 }
 
 export async function getGamesBySubstring(substring: string): Promise<Game[]> {
 	const gamesBestMatch = await Game.findAll({
-		'where': { 'name': { [Op.like]: `%${substring}%` } }
+		where: { 'name': { [Op.like]: `%${substring}%` } }
 	});
 
 	const gamesTypoMatch = substring.length > 3 ? await Game.findAll({
-		'where': {
+		where: {
 			[Op.and]: [
 				{ 'name': { [Op.like]: `${substring.split('').reduce((accumulated, current) => accumulated + `${current}%`, '%')}`} },
 				{ 'id': { [Op.notIn]: gamesBestMatch.map(game => game.id)} }
@@ -176,6 +178,15 @@ export async function getGamesByName(gameName: string): Promise<Game[]> {
 	return await Game.findAll({ where: { name: { [Op.like]: gameName } }, include: Tag });
 }
 
+export async function getBasicImportedGames(): Promise<Game[]> {
+	return await Game.findAll({ 
+		where: { 
+			basicImported: true
+		},
+		include: Tag
+	});
+}
+
 export async function deleteGame(game: Game): Promise<void> {
 	await Game.destroy({ where: { id: game.id }});
 }
@@ -190,7 +201,7 @@ export async function getTags(): Promise<Tag[]> {
 
 export async function findOrCreateTags(tags: Tag[]): Promise<Tag[]> {
 	let actualTags: Tag[] = [];
-	for(const tag of tags) {
+	for (const tag of tags) {
 		let actualTag = await Tag.findOne({ where: { name: { [Op.like]: tag.name } } });
 		if (actualTag === null)
 			actualTag = await tag.save();

@@ -13,7 +13,8 @@ const TAGS_FIELD_ID = "tagsInput";
 const TAGS_FIELD_NAME = "Tags (comma separated list)"
 
 export function buildGameModal(modalId: string, game?: Game): ModalBuilder {
-    const modalTitle = game === null || typeof game === "undefined" ? 'Add Game' : `Edit ${game.name}`;
+    const modalTitleFriendlyName = game?.name?.length ?? 0 > 40 ? `${game?.name.slice(0, 37)}...` : game?.name;
+    const modalTitle = game === null || typeof game === "undefined" ? 'Add Game' : `Edit ${modalTitleFriendlyName}`;
 
     const modal = new ModalBuilder()
                     .setCustomId(modalId)

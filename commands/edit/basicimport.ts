@@ -1,50 +1,32 @@
 import path from "node:path";
-import { getGamesByName, getGamesBySubstring, updateGame } from "../../db/sequelizeDbLayer";
+import { getBasicImportedGames, updateGame } from "../../db/sequelizeDbLayer";
 import { ChatInputCommandInteraction, SlashCommandSubcommandBuilder } from "discord.js";
 import { buildGameModal, handleGameModalInteraction } from "../../shared/gameModalHelpers";
 import { validateGameInputs } from "../../shared/validationHelpers";
 
 const COMMAND_NAME = path.basename(__filename, ".ts");
-const COMMAND_DESCRIPTION = "Edit a game within Jigsaw's library.";
+const COMMAND_DESCRIPTION = "Edit games that were basic imported";
 const EDIT_GAME_MODAL_ID = "editGameModal";
-const GAME_NAME_ARG_KEY = "name";
-const GAME_NAME_DESCRIPTION = "Name of game to edit";
 
 export default {
   helpText: `${COMMAND_NAME} - ${COMMAND_DESCRIPTION}
-  Args:
-  - ${GAME_NAME_ARG_KEY} (required): ${GAME_NAME_DESCRIPTION}`,
+  Args: None`,
 
   
   data: new SlashCommandSubcommandBuilder()
     .setName(COMMAND_NAME)
-    .setDescription(COMMAND_DESCRIPTION)
-    .addStringOption(option => option.setName(GAME_NAME_ARG_KEY)
-        .setDescription("Game to edit")
-        .setRequired(true)
-        .setAutocomplete(true)
-    ),
-    // .addSubcommandGroup(group =>
-    //   group.setName("user_platforms")
-    //     .setDescription("Edit a User's Platform Ids")
-    //     .addSubcommand(subCommand =>
-    //       subCommand.setName("steam_id")
-    //         .setDescription("Edit a User's Steam Id in case they changed it in Steam")
-    //         .addUserOption(option => option.setName("user").setDescription("Discord user to edit the Steam Id for"))
-    //         .addStringOption(option => option.setName("steam_id").setDescription("New Steam Id to assign for the Discord user"))
-    //     )
-    // ),
+    .setDescription(COMMAND_DESCRIPTION),
 
 
   async execute(interaction: ChatInputCommandInteraction) {
-    const gameNameFromArg = interaction.options.getString(GAME_NAME_ARG_KEY, true);
-    const matchingGames = await getGamesByName(gameNameFromArg);
+    const matchingGames = await getBasicImportedGames();
     if (matchingGames.length === 0) {
-      await interaction.reply({ content: `Could not find any games in Jigsaw's library matching '${gameNameFromArg}'`, ephemeral: true });
+      await interaction.reply({ content: `Could not find any games in Jigsaw's library that were previously basic imported`, ephemeral: true });
       return;
     }
-    const game = matchingGames[0];
 
+    // await interaction.deferReply();
+    const game = matchingGames[0];
     const modal = buildGameModal(EDIT_GAME_MODAL_ID, game);
     await interaction.showModal(modal);
 
@@ -62,7 +44,7 @@ export default {
         }
         
         const savedGame = await updateGame(game, modalResponse.name, modalResponse.lowerPlayerBound!.valueOf(), modalResponse.upperPlayerBound, false, modalResponse.tags);
-        await modalInteraction.reply({ content: `Successfully saved ${savedGame.toString()}`, ephemeral: true });
+        await modalInteraction.reply({ content: `Successfully saved ${savedGame.toString()}. ${matchingGames.length-1} basic imported games remaining.`, ephemeral: true });
       }
     } catch (ex) {
       console.log(ex);
@@ -76,12 +58,4 @@ export default {
       await interaction.followUp({ content: message, ephemeral: true });
     }
   },
-
-  async autocomplete(interaction) {
-    const focusedValue = interaction.options.getFocused();
-    let games = await getGamesBySubstring(focusedValue);
-    games = games.slice(0, 25);
-    
-    await interaction.respond(games.map(game => ({ name: game.name, value: game.name })));
-  }
 }

@@ -37,7 +37,7 @@ export default {
 
       let game: Game;
       try {
-        game = await insertGame(modalResponse.name, modalResponse.lowerPlayerBound!.valueOf(), modalResponse.upperPlayerBound, null, modalResponse.tags);
+        game = await insertGame(modalResponse.name, modalResponse.lowerPlayerBound!.valueOf(), modalResponse.upperPlayerBound, false, null, modalResponse.tags);
       } catch (insertGameError) {
         console.log(insertGameError);
         await modalInteraction.reply({ content: insertGameError.message, ephemeral: true});

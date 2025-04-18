@@ -17,6 +17,11 @@ const GamesTableDefinition = {
     },
     upperPlayerBound: DataTypes.INTEGER.UNSIGNED,
     steamId: DataTypes.INTEGER.UNSIGNED,
+    basicImported: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false,
+    },
 
     createdAt: DataTypes.DATE,
     updatedAt: DataTypes.DATE,
@@ -28,6 +33,7 @@ class Game extends Model<InferAttributes<Game, { omit: 'Tags' | 'SteamOwners' }>
     declare lowerPlayerBound: number;
     declare upperPlayerBound?: number | null;
     declare steamId?: number | null;
+    declare basicImported: boolean;
 
     declare createdAt: CreationOptional<Date>;
     declare updatedAt: CreationOptional<Date>;
@@ -54,7 +60,7 @@ class Game extends Model<InferAttributes<Game, { omit: 'Tags' | 'SteamOwners' }>
     };
 
     toString(): string {
-        return `${this.name}, #: ${this.lowerPlayerBound} - ${this.upperPlayerBound}, Tags: ${this.Tags ? this.Tags.map(tag => tag.name).join(", ") : "none"}`;
+        return `${this.name}, #: ${this.lowerPlayerBound} - ${this.upperPlayerBound}, BasicImported: ${this.basicImported}, Tags: ${this.Tags ? this.Tags.map(tag => tag.name).join(", ") : "none"}`;
     }
 }
 

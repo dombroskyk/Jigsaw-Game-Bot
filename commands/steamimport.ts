@@ -52,7 +52,7 @@ class SteamImportCommand extends Command implements ICommand {
 
     const user = interaction.options.getUser(USER_ARG_KEY, true);
     let checkpointGameId = interaction.options.getInteger(STEAM_GAME_ID_KEY);
-    const basicImportFlag = interaction.options.getBoolean(BASIC_IMPORT_KEY);
+    const basicImportFlag = interaction.options.getBoolean(BASIC_IMPORT_KEY) ?? false;
 
     let steamUserPlatformMapping: UserPlatformMapping;
     try {
@@ -212,21 +212,25 @@ class SteamImportCommand extends Command implements ICommand {
         }
       }
       
-      tags = await findOrCreateTags(tags);
+      try{
+        tags = await findOrCreateTags(tags);
 
-      const game = await insertGame(gameName, lowerPlayerBound, upperPlayerBound, gameId, tags);
-      await mapGameToSteamUser(game, steamUserPlatformMapping);
+        const game = await insertGame(gameName, lowerPlayerBound, upperPlayerBound, basicImportFlag, gameId, tags);
+        await mapGameToSteamUser(game, steamUserPlatformMapping);
 
-      if (!basicImportFlag) {
-        const successMessage = { content: `Successfully saved ${game.toString()}`, options: { flags: MessageFlags.Ephemeral }};
-        if (typeof messageToReply !== "undefined") {
-          await messageToReply.reply(successMessage);
-        } else {
-          // interaction.followUp(successMessage)
+        if (!basicImportFlag) {
+          const successMessage = { content: `Successfully saved ${game.toString()}`, options: { flags: MessageFlags.Ephemeral }};
+          if (typeof messageToReply !== "undefined") {
+            await messageToReply.reply(successMessage);
+          } else {
+            // interaction.followUp(successMessage)
+          }
         }
-      }
 
-      importedSteamGames.push(game);
+        importedSteamGames.push(game);
+      } catch (ex)  {
+        await interaction.followUp({ content: `Failed to import game ${gameId}`, ephemeral: true });
+      }
     };
 
     if (basicImportFlag) {
