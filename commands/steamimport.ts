@@ -6,7 +6,7 @@ import { getTagsFromMessage, getNumPlayersFromId } from "../textHelpers/textPars
 import { handleSteamImportCollectorError } from "../errorHandling/replyTimeout";
 import { ChatInputCommandInteraction, Message, MessageFlags, MessagePayload, MessageReplyOptions, SlashCommandBuilder } from "discord.js";
 import { insertGame } from "../db/sequelizeDbLayer";
-import { Game, Tag, UserPlatformMapping } from "../models/models";
+import { Game, Tag, UserPlatformMapping } from "../db/models/models";
 import { Command, ICommand } from "../types/command";
 import { axiosExceptionHandling, basicExceptionHandling } from "../errorHandling/exceptionMessage";
 

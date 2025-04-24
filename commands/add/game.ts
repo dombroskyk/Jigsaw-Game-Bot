@@ -1,5 +1,5 @@
 import path from "node:path";
-import { Game } from "../../models/models";
+import { Game } from "../../db/models/models";
 import { insertGame } from "../../db/sequelizeDbLayer";
 import { ChatInputCommandInteraction, SlashCommandSubcommandBuilder } from "discord.js";
 import { buildGameModal, handleGameModalInteraction } from "../../shared/gameModalHelpers";

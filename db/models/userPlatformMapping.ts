@@ -1,4 +1,4 @@
-import { getClient } from "../messageContextHelper";
+import { getClient } from "../../messageContextHelper";
 import { CreationOptional, DataTypes, InferAttributes, InferCreationAttributes, Model } from "sequelize";
 import * as dotenv from 'dotenv';
 import { Guild, GuildMember } from "discord.js";

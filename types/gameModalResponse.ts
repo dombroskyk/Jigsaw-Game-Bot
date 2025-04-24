@@ -1,4 +1,4 @@
-import { Tag } from "../models/models";
+import { Tag } from "../db/models/models";
 
 export interface GameModalResponse {
     name: string,

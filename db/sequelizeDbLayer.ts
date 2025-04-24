@@ -1,6 +1,6 @@
 import { FindOptions, Op, Sequelize } from "sequelize";
 import * as dotenv from 'dotenv';
-import { Game, GamesTableDefinition, UserPlatformMapping, UserPlatformMappingsTableDefinition, Tag, TagsTableDefinition } from "../models/models";
+import { Game, GamesTableDefinition, UserPlatformMapping, UserPlatformMappingsTableDefinition, Tag, TagsTableDefinition } from "./models/models";
 import { GetGamesFilter } from "../models/getGamesFilter";
 dotenv.config();
 
@@ -24,6 +24,7 @@ UserPlatformMapping.belongsToMany(Game, { through: 'Game_SteamUserPlatformMappin
 
 // sequelize.sync({force: true});
 // sequelize.sync({alter: true});
+// sequelize.drop();
 sequelize.sync();
 
 export async function insertGame(name: string, lowerPlayerBound: number, upperPlayerBound: number | null, basicImported: boolean, steamId: number | null, tags: Tag[]): Promise<Game> {

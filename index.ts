@@ -12,6 +12,7 @@ dotenv.config();
 //todo: democracy mode
 // 2024-01-20: NOT POSSIBLE - todo: epic integration (must manually manage linking, Discord does not allow getting a users connections via bot)
 // -- suggest games from a collection of mentioned users
+// Cooldown
 // string constants to common file?
 // minimum permissions
 // Success message on basic import

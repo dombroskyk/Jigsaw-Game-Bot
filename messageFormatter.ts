@@ -1,4 +1,4 @@
-import { Game } from "models/models";
+import { Game } from "db/models/models";
 import { ActionRowBuilder, ButtonStyle, ButtonBuilder, InteractionReplyOptions, BaseMessageOptions } from "discord.js";
 
 export const YES_GAME_BUTTON_ID = "YesGame";

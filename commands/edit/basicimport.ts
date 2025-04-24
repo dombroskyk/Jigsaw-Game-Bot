@@ -25,7 +25,6 @@ export default {
       return;
     }
 
-    // await interaction.deferReply();
     const game = matchingGames[0];
     const modal = buildGameModal(EDIT_GAME_MODAL_ID, game);
     await interaction.showModal(modal);

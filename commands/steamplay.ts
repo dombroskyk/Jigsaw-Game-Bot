@@ -63,19 +63,19 @@ export default {
             .setRequired(false)),
   
 	async execute(interaction) {
-    // const user1 = interaction.options.getUser(USER1_ARG_KEY);
-    // const inputUsers = [
-    //   interaction.options.getUser(USER1_ARG_KEY),
-    //   interaction.options.getUser(USER2_ARG_KEY),
-    //   interaction.options.getUser(USER3_ARG_KEY),
-    //   interaction.options.getUser(USER4_ARG_KEY),
-    //   interaction.options.getUser(USER5_ARG_KEY),
-    //   interaction.options.getUser(USER6_ARG_KEY),
-    //   interaction.options.getUser(USER7_ARG_KEY),
-    //   interaction.options.getUser(USER8_ARG_KEY),
-    //   interaction.options.getUser(USER9_ARG_KEY),
-    //   interaction.options.getUser(USER10_ARG_KEY),
-    // ].filter(inputUser => inputUser !== null);
+    const user1 = interaction.options.getUser(USER1_ARG_KEY);
+    const inputUsers = [
+      interaction.options.getUser(USER1_ARG_KEY),
+      interaction.options.getUser(USER2_ARG_KEY),
+      interaction.options.getUser(USER3_ARG_KEY),
+      interaction.options.getUser(USER4_ARG_KEY),
+      interaction.options.getUser(USER5_ARG_KEY),
+      interaction.options.getUser(USER6_ARG_KEY),
+      interaction.options.getUser(USER7_ARG_KEY),
+      interaction.options.getUser(USER8_ARG_KEY),
+      interaction.options.getUser(USER9_ARG_KEY),
+      interaction.options.getUser(USER10_ARG_KEY),
+    ].filter(inputUser => inputUser !== null);
 
     // const steamUsers = await getSteamUsers();
     // let missingUsers:string[] = [];

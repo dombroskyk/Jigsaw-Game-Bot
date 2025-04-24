@@ -3,7 +3,7 @@ import path from "node:path";
 import { handleCollectorError } from "../errorHandling/replyTimeout";
 import { NO_GAME_BUTTON_ID, YES_GAME_BUTTON_ID, formatGameSuggestion } from "../messageFormatter";
 import { getTagAndIntentionFromId } from "../textHelpers/textParsing";
-import { Game } from "models/models";
+import { Game } from "db/models/models";
 import { ChatInputCommandInteraction, ComponentType, InteractionReplyOptions, Message, MessageComponentInteraction, SlashCommandBuilder } from "discord.js";
 import { GetGamesFilter } from "../models/getGamesFilter";
 import { Command, ICommand } from "../types/command";

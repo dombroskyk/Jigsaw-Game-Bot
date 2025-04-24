@@ -26,7 +26,7 @@ class DebugCommand extends Command implements IParentCommand {
 
   async execute(interaction: ChatInputCommandInteraction) {
     const subcommand = subcommands.get(interaction.options.getSubcommand());
-
+    
     if (!subcommand) {
       await interaction.followUp({ content: "Subcommand not found!", ephemeral: true });
       return;

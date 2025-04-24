@@ -1,6 +1,6 @@
 import { findOrCreateTags } from "../db/sequelizeDbLayer";
 import { ActionRowBuilder, CacheType, ModalActionRowComponentBuilder, ModalBuilder, ModalSubmitInteraction, TextInputBuilder, TextInputStyle } from "discord.js";
-import { Game, Tag } from "../models/models";
+import { Game, Tag } from "../db/models/models";
 import { GameModalResponse } from "../types/gameModalResponse";
 
 const GAME_NAME_FIELD_ID = "nameInput";
